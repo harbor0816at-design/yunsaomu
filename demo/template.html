@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>云扫墓 · MVP 演示</title>
+<style>
+:root{--ink:#f1ece2;--dim:#b9b2a3;--line:rgba(222,210,182,.28);--panel:rgba(24,30,27,.96);--accent:#d8c79a;--accent-ink:#1d2420}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#0f1311;color:var(--ink);font-family:"Songti SC","STSong","Noto Serif SC",serif;font-size:15px;line-height:1.6}
+#phone{position:relative;max-width:430px;height:100%;margin:0 auto;overflow:hidden;overflow:clip;background:#1d2420}
+.screen{position:absolute;inset:0;overflow-y:auto;display:none}
+.screen.on{display:block}
+.demo-tag{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:40;font-size:11px;color:#1d2420;background:rgba(216,199,154,.9);padding:2px 10px;border-radius:99px;white-space:nowrap;pointer-events:none}
+button{font-family:inherit;cursor:pointer}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;height:46px;border-radius:23px;border:0;font-size:16px;letter-spacing:2px;background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.45}
+.muted{color:var(--dim);font-size:13px}
+/* 首页 */
+#home{padding:44px 22px 30px;background:linear-gradient(180deg,#2b3a35 0%,#1d2420 55%,#181d1a 100%)}
+.hero{text-align:center;padding:16px 0 22px}
+.mark{width:60px;height:75px;margin:0 auto 12px;position:relative}
+.mark i{position:absolute;left:15px;top:0;width:30px;height:59px;border-radius:15px 15px 3px 3px;background:linear-gradient(180deg,#8e978d,#5f685f);box-shadow:0 0 20px rgba(216,199,154,.18)}
+.mark b{position:absolute;left:5px;bottom:0;width:50px;height:13px;border-radius:3px;background:#4c544c}
+.title{font-size:28px;letter-spacing:8px}
+.slogan{font-size:16px;color:var(--accent);margin-top:6px;letter-spacing:2px}
+.card{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:16px}
+.card h3{margin:0 0 8px;font-size:16px;font-weight:400;display:flex;justify-content:space-between}
+.row{display:flex;align-items:center;padding:11px 0;border-top:1px solid rgba(255,255,255,.06);cursor:pointer}
+.row .n{flex:1;font-size:16px}
+.tag{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:99px;padding:0 8px;margin-right:8px}
+.link{color:var(--accent);cursor:pointer}
+/* 建墓 */
+#create{padding:52px 22px 30px}
+.navb{position:absolute;top:28px;left:14px;font-size:26px;color:var(--ink);background:none;border:0}
+.consent{display:flex;gap:10px;padding:14px;border:1px solid var(--line);border-radius:10px;margin:8px 0 22px;background:rgba(255,255,255,.03);cursor:pointer}
+.box{flex:none;width:20px;height:20px;border:1px solid var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--accent-ink);margin-top:2px}
+.box.on{background:var(--accent)}
+.field{margin-bottom:18px}
+.label{font-size:14px;color:var(--dim);margin-bottom:6px}
+.req{color:#e2a87d;margin-left:3px}
+input,textarea,select{width:100%;padding:11px 14px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:15px}
+textarea{min-height:70px;resize:none}
+.err{color:#f0a58a;font-size:13px;margin-top:4px;min-height:1em}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:5px 14px;border-radius:99px;border:1px solid var(--line);font-size:13px;cursor:pointer;user-select:none}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.two{display:flex;gap:10px}
+.two .btn{flex:1}.two .btn.grow{flex:2}
+/* 场景 */
+#tomb{overflow:hidden;overflow:clip}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.top{position:absolute;top:30px;left:10px;right:10px;display:flex;align-items:center;gap:7px;z-index:5}
+.back{width:32px;height:32px;border-radius:50%;background:rgba(18,22,20,.55);color:#fff;font-size:22px;border:0;line-height:1}
+.pill{background:rgba(18,22,20,.55);border:1px solid var(--line);border-radius:99px;padding:3px 11px;font-size:12px;white-space:nowrap}
+.pill.name{color:var(--accent);max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#8fd18b;box-shadow:0 0 5px #8fd18b;margin-right:5px;vertical-align:middle}
+.tools{position:absolute;top:72px;right:12px;display:flex;flex-direction:column;gap:8px;z-index:5}
+.icon{width:36px;height:36px;border-radius:50%;background:rgba(18,22,20,.6);border:1px solid var(--line);color:var(--ink);font-size:14px}
+.hint{position:absolute;top:76px;left:50%;transform:translateX(-50%);background:rgba(18,22,20,.7);border-radius:99px;padding:5px 14px;font-size:13px;opacity:0;transition:opacity .4s;pointer-events:none;white-space:nowrap;z-index:4}
+.hint.show{opacity:1}
+.wipetip{position:absolute;left:50%;bottom:110px;transform:translateX(-50%);font-size:12px;color:var(--dim);background:rgba(18,22,20,.55);padding:4px 12px;border-radius:99px;white-space:nowrap;pointer-events:none;transition:opacity .5s}
+.bar{position:absolute;left:8px;right:8px;bottom:12px;display:flex;background:rgba(18,22,20,.75);border:1px solid var(--line);border-radius:16px;padding:7px 4px;z-index:5}
+.act{flex:1;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--dim);background:none;border:0;padding:0}
+.act .g{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid rgba(216,199,154,.6);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--accent);margin-bottom:3px;background:linear-gradient(180deg,rgba(70,62,40,.7),rgba(30,28,20,.7))}
+.act:active .g{transform:scale(.93)}
+.act.on .g{background:var(--accent);color:var(--accent-ink)}
+.badge{position:absolute;right:-3px;top:-3px;min-width:15px;height:15px;border-radius:8px;background:#d9734e;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:9;display:none}
+.mask.on{display:block}
+.sheet{position:absolute;left:0;right:0;bottom:0;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:0 18px 20px;max-height:80%;overflow-y:auto;z-index:10}
+.sheet.open{transform:none}
+.grab{width:40px;height:4px;border-radius:2px;background:rgba(216,199,154,.35);margin:9px auto 5px}
+.st{font-size:17px;text-align:center;margin:5px 0 14px;color:var(--accent)}
+.flowers{display:flex;justify-content:space-around;margin-bottom:14px}
+.flower{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.fd{width:56px;height:56px;border-radius:50%;border:1px solid var(--line)}
+.f-baiju{background:radial-gradient(circle,#e8cf6a 18%,#f7f4ea 22%,#f7f4ea 60%,#dcd6c4 100%)}
+.f-huangju{background:radial-gradient(circle,#b9822a 18%,#f2c94c 22%,#f2c94c 60%,#d9a92e 100%)}
+.f-cuibai{background:radial-gradient(circle,#6f9a63 20%,#4f7d4f 60%,#3a6440 100%)}
+.ins{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.ins .b{font-size:15px;word-break:break-all}
+.ins .m{font-size:11px;color:var(--dim);margin-top:3px;display:flex;gap:7px;align-items:center}
+.t2{color:#e2c27d;border:1px solid rgba(226,194,125,.5);border-radius:4px;padding:0 5px}
+.mb{font-size:12px;padding:2px 11px;border-radius:99px;border:1px solid var(--line);background:none;color:var(--ink);margin-top:5px;margin-right:6px}
+.mb.ok{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(10,12,11,.85);color:#fff;padding:9px 16px;border-radius:8px;font-size:14px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:80%;text-align:center}
+.toast.on{opacity:1}
+.dlg{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
+.dlg.on{display:flex}
+.dlg .in{width:86%;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:12px}
+.mvp{font-size:12px;color:var(--dim);line-height:1.7;margin-top:22px;border-top:1px dashed var(--line);padding-top:12px}
+.mvp b{color:var(--accent);font-weight:400}
+</style>
+</head>
+<body>
+<div id="phone">
+  <div class="demo-tag">MVP 演示 · 数据只存在本机</div>
+
+  <!-- 首页 -->
+  <section id="home" class="screen on">
+    <div class="hero">
+      <div class="mark"><i></i><b></b></div>
+      <div class="title">云扫墓</div>
+      <div class="slogan">想念的时候，来看看。</div>
+      <div class="muted" style="margin-top:8px">一座随时可以来看看的线上纪念墓。仅持链接的亲友可见。</div>
+    </div>
+    <button class="btn" onclick="go('create')">为亲人建一座纪念墓</button>
+    <div class="card">
+      <h3>我的纪念墓</h3>
+      <div id="myList"></div>
+    </div>
+    <div class="card">
+      <h3>通过邀请进入</h3>
+      <div class="muted">亲友在微信里转发的纪念墓，点开就能直接进入。演示里可以先看看示例：</div>
+      <div class="link" style="margin-top:6px" onclick="enterSample()">进入示例纪念墓「奶奶」 ›</div>
+    </div>
+    <div class="mvp">
+      <b>MVP 范围</b>：建墓（只填称呼）→ 直接进墓园 → 献花、上香、点烛、擦碑、鞠躬 → 留言（审核后亲友可见）→ 邀请亲友。<br>
+      不在 MVP：AI 纪念回信、付费纪念服务、账号与跨设备、照片上传。<br>
+      演示中的「亲友到访」是本地模拟；小程序正式版通过实时频道同步。
+    </div>
+  </section>
+
+  <!-- 建墓 -->
+  <section id="create" class="screen">
+    <button class="navb" onclick="go('home')">‹</button>
+    <div id="c1">
+      <div style="font-size:20px;margin-bottom:8px">建一座纪念墓</div>
+      <div class="consent" onclick="toggleConsent()">
+        <div class="box" id="cbox"></div>
+        <div class="muted">我有权为这位亲人发布纪念内容；纪念墓仅持链接的人可见；留言会经过审核。我已阅读《隐私政策》和《用户协议》。</div>
+      </div>
+      <div class="field">
+        <div class="label">逝者姓名或纪念称呼<span class="req">*</span></div>
+        <input id="cname" maxlength="40" placeholder="例如：奶奶、外公、王秀英">
+        <div class="err" id="cerr"></div>
+      </div>
+      <div class="muted" style="margin-bottom:18px">只填称呼就可以建立。其余信息都是选填。</div>
+      <button class="btn" onclick="next()">下一步</button>
+    </div>
+    <div id="c2" style="display:none">
+      <div style="font-size:18px;color:var(--accent);margin-bottom:16px" id="cwho"></div>
+      <div class="field"><div class="label">墓园场景<span class="req">*</span></div><div class="chips"><span class="chip on">青山小院</span></div></div>
+      <div class="field"><div class="label">生卒年（选填，可只填一个）</div>
+        <div class="two"><input id="by" inputmode="numeric" maxlength="4" placeholder="生年"><input id="dy" inputmode="numeric" maxlength="4" placeholder="卒年"></div></div>
+      <div class="field"><div class="label">墓志铭（选填，80 字以内）</div><textarea id="ep" maxlength="80" placeholder="想刻在碑上的一句话"></textarea></div>
+      <div class="field"><div class="label">墓碑样式</div><div class="chips" id="styles"></div></div>
+      <div class="err" id="c2err"></div>
+      <div class="two"><button class="btn ghost" onclick="showStep(1)">上一步</button><button class="btn grow" onclick="createTomb()">建立</button></div>
+    </div>
+  </section>
+
+  <!-- 场景 -->
+  <section id="tomb" class="screen">
+    <canvas id="scene"></canvas>
+    <div class="top"><button class="back" onclick="leaveTomb()">‹</button><span class="pill name" id="tname"></span><span class="pill"><i class="dot"></i><span id="online">1</span> 人在墓前</span></div>
+    <div class="tools"><button class="icon" onclick="openSheet('settings')">设</button><button class="icon" onclick="openSheet('invite')">邀</button></div>
+    <div class="hint" id="hint"></div>
+    <div class="wipetip" id="wipetip">在碑面上来回滑动，可以擦拭墓碑</div>
+    <div class="bar">
+      <button class="act" onclick="openSheet('flower')"><span class="g">花</span>献花</button>
+      <button class="act" onclick="offer('incense')"><span class="g">香</span>上香</button>
+      <button class="act" onclick="offer('candle')"><span class="g">烛</span>点烛</button>
+      <button class="act" onclick="wipeOnce()"><span class="g">拭</span>擦碑</button>
+      <button class="act" id="bowBtn" onclick="toggleBow()"><span class="g">躬</span><span id="bowTxt">鞠躬</span></button>
+      <button class="act" onclick="openSheet('message')"><span class="g">言<span class="badge" id="badge" style="display:none"></span></span>留言</button>
+    </div>
+    <div class="mask" id="mask" onclick="closeSheet()"></div>
+    <div class="sheet" id="sheet"><div class="grab"></div><div id="sheetBody"></div></div>
+  </section>
+
+  <div class="dlg" id="dlg"><div class="in">
+    <div style="font-size:19px;text-align:center;color:var(--accent)">纪念墓已建好</div>
+    <div style="font-size:14px">正式版里，管理权限保存在建墓人的手机上，并建议另存一份「管理链接」。邀请亲友：进墓后点右上角「邀」，直接转发给微信好友。</div>
+    <button class="btn" onclick="closeDlg()">进入纪念墓</button>
+  </div></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/*ENGINE*/
+</script>
+<script>
+const $ = (id) => document.getElementById(id)
+const K = 'ysm.demo.tombs'
+let tombs = []
+try { tombs = JSON.parse(localStorage.getItem(K) || '[]') } catch (e) { tombs = [] }
+function save() { try { localStorage.setItem(K, JSON.stringify(tombs)) } catch (e) {} }
+
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 1800) }
+function go(id) { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); $('phone').scrollTop = 0; window.scrollTo(0, 0); document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('on', s.id === id)); if (id === 'home') renderHome(); if (id === 'create') resetCreate() }
+
+function renderHome() {
+  const el = $('myList')
+  if (!tombs.length) { el.innerHTML = '<div class="muted">这台设备上还没有纪念墓的记录。</div><div class="link" onclick="go(\'create\')" style="margin-top:6px">现在去建一座 ›</div>'; return }
+  el.innerHTML = tombs.slice().reverse().map((t) => `<div class="row" onclick="openTomb('${t.id}')"><span class="n">${esc(t.name)}</span><span class="tag">我建的</span><span class="muted">›</span></div>`).join('') +
+    '<div class="muted" style="font-size:11px;margin-top:6px">记录只保存在这台设备上。</div>'
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])) }
+
+// ---------- 建墓 ----------
+let consent = false, stele = 'qingshi'
+const STYLES = [['qingshi', '青石立碑'], ['wubei', '卧碑'], ['yuanshou', '圆首碑']]
+function resetCreate() { consent = false; $('cbox').className = 'box'; $('cbox').textContent = ''; $('cname').value = ''; $('cerr').textContent = ''; $('by').value = ''; $('dy').value = ''; $('ep').value = ''; stele = 'qingshi'; renderStyles(); showStep(1) }
+function toggleConsent() { consent = !consent; $('cbox').className = 'box' + (consent ? ' on' : ''); $('cbox').textContent = consent ? '✓' : '' }
+function renderStyles() { $('styles').innerHTML = STYLES.map(([id, n]) => `<span class="chip ${id === stele ? 'on' : ''}" onclick="stele='${id}';renderStyles()">${n}</span>`).join('') }
+function showStep(n) { $('c1').style.display = n === 1 ? '' : 'none'; $('c2').style.display = n === 2 ? '' : 'none' }
+function containsContact(t) { return /1[3-9]\d{9}/.test(t) || /\d{17}[\dXx]/.test(t) || /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(t) }
+function next() {
+  const n = $('cname').value.trim()
+  if (!consent) return ($('cerr').textContent = '请先阅读并勾选上方说明')
+  if (!n) return ($('cerr').textContent = '请填写逝者姓名或纪念称呼')
+  if (containsContact(n)) return ($('cerr').textContent = '称呼中请不要填写联系方式或证件号码')
+  $('cwho').textContent = `为「${n}」建一座纪念墓`
+  showStep(2)
+}
+function createTomb() {
+  const y = new Date().getFullYear()
+  const b = $('by').value.trim(), d = $('dy').value.trim()
+  for (const [v, l] of [[b, '生年'], [d, '卒年']]) if (v && (!/^\d{4}$/.test(v) || +v < 1800 || +v > y)) return ($('c2err').textContent = `${l}不在合理范围内`)
+  if (b && d && +d < +b) return ($('c2err').textContent = '卒年不能早于生年')
+  const t = { id: 'tmb_' + Math.random().toString(36).slice(2, 10), name: $('cname').value.trim(), birth: b, death: d, epitaph: $('ep').value.trim(), style: stele, offerings: [], ins: [], wipe: 0 }
+  tombs.push(t); save()
+  pendingOpen = t.id
+  $('dlg').classList.add('on')
+}
+let pendingOpen = null
+function closeDlg() { $('dlg').classList.remove('on'); openTomb(pendingOpen) }
+
+// ---------- 场景 ----------
+let cur = null, scene = null, raf = 0, sim = 0, hints = []
+const SAMPLE = { id: 'sample', name: '奶奶', birth: '1931', death: '2019', epitaph: '一生勤俭，福泽儿孙', style: 'qingshi', offerings: [], ins: [{ id: 'i0', body: '奶奶，今年家里的桂花开得很好。', name: '小孙女', status: 'approved', at: Date.now() - 86400000 }], wipe: 0.3, sample: true }
+function enterSample() { cur = SAMPLE; startTomb() }
+function openTomb(id) { cur = tombs.find((t) => t.id === id); if (cur) startTomb() }
+function dates(t) { if (t.birth && t.death) return `${t.birth}—${t.death}`; if (t.birth) return `生于${t.birth}`; if (t.death) return `卒于${t.death}`; return '' }
+const env = { season: '', tod: 'auto', weather: 'clear', quality: 'standard' }
+function season() { if (env.season) return env.season; const m = new Date().getMonth() + 1; return m >= 3 && m <= 5 ? 'spring' : m <= 8 && m >= 6 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter' }
+function phase() { if (env.tod === 'day') return 'noon'; if (env.tod === 'night') return 'night'; const h = new Date().getHours(); return h >= 5 && h < 9 ? 'dawn' : h < 16 && h >= 9 ? 'noon' : h >= 16 && h < 19 ? 'dusk' : 'night' }
+function startTomb() {
+  go('tomb')
+  $('tname').textContent = cur.name
+  $('wipetip').style.opacity = 1
+  const c = $('scene'), r = c.getBoundingClientRect()
+  const pr = Math.min(2, window.devicePixelRatio || 1)
+  c.width = r.width * pr; c.height = r.height * pr
+  const ctx = c.getContext('2d'); ctx.setTransform(pr, 0, 0, pr, 0, 0)
+  scene = new Scene(ctx, { seed: cur.id, onBowEnd: () => setBow(false), onQuality: () => { env.quality = 'smooth'; toast('已切换到流畅画质') } })
+  scene.resize(r.width, r.height)
+  scene.setTomb({ name: cur.name, dates: dates(cur), epitaph: cur.epitaph, style: cur.style })
+  applyEnv(); refresh(); scene.setWipeLevel(cur.wipe || 0)
+  updateBadge(); $('online').textContent = 1; scene.setPeers([])
+  cancelAnimationFrame(raf)
+  const loop = () => { scene.render(Date.now()); raf = requestAnimationFrame(loop) }
+  loop()
+  clearInterval(sim); sim = setInterval(simulate, 9000); setTimeout(simulate, 4000)
+  simState = 0
+}
+function applyEnv() { scene.setEnv({ season: season(), phase: phase(), weather: env.weather, quality: env.quality }) }
+function refresh() { scene.setOfferings(cur.offerings) }
+function leaveTomb() { cancelAnimationFrame(raf); clearInterval(sim); closeSheet(); if (!cur.sample) save(); go('home') }
+setInterval(() => { if (scene && cur) { refresh(); flushWipe() } if (hintUntil && Date.now() > hintUntil) { $('hint').classList.remove('show'); hintUntil = 0 } }, 700)
+
+function iso(ms) { return new Date(ms).toISOString() }
+const TTL = { incense: 120000, candle: 600000, flower: 30 * 86400000 }
+function addOffering(type, subtype, who) {
+  const now = Date.now()
+  if (type === 'incense' && cur.offerings.filter((o) => o.type === 'incense' && Date.parse(o.expiresAt) > now).length >= 8) { toast('香炉里已插满，请稍候'); return }
+  cur.offerings.push({ id: 'o' + now + Math.random(), type, subtype, state: 'active', placedAt: iso(now), expiresAt: iso(now + (TTL[type] || 10000)), who })
+  refresh(); if (!cur.sample) save()
+}
+function offer(type, sub) { addOffering(type, sub, 'me') }
+function wipeOnce() { scene.sweep(); setWipe(Math.min(1, (cur.wipe || 0) + 0.35)) }
+function setWipe(v) { cur.wipe = v; scene.setWipeLevel(v); if (!cur.sample) save() }
+function flushWipe() { const inc = scene.consumeWipe(); if (inc > 0.004) { cur.wipe = Math.min(1, (cur.wipe || 0) + inc); if (!cur.sample) save() } }
+function setBow(on) { $('bowBtn').classList.toggle('on', on); $('bowTxt').textContent = on ? '停下' : '鞠躬' }
+function toggleBow() { if (scene.isBowing()) { scene.stopBow(); setBow(false) } else { scene.startBow(3); setBow(true) } }
+document.addEventListener('visibilitychange', () => { if (document.hidden && scene && scene.isBowing()) { scene.stopBow(); setBow(false) } })
+
+// 碑面滑动擦拭
+let wiping = false
+const cv = $('scene')
+function pt(e) { const r = cv.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top } }
+function down(e) { const p = pt(e); wiping = scene && scene.isOnStele(p.x, p.y); if (wiping) { $('wipetip').style.opacity = 0; e.preventDefault() } }
+function move(e) { if (!wiping) return; const p = pt(e); scene.wipeAt(p.x, p.y); e.preventDefault() }
+function up() { wiping = false; if (scene) flushWipe() }
+cv.addEventListener('touchstart', down, { passive: false }); cv.addEventListener('touchmove', move, { passive: false }); cv.addEventListener('touchend', up)
+cv.addEventListener('mousedown', down); cv.addEventListener('mousemove', (e) => { if (e.buttons) move(e) }); window.addEventListener('mouseup', up)
+
+// 他人动作短提示（本地模拟亲友到访）
+const VERB = { flower: '献上了一束花', incense: '上了一炷香', candle: '点亮了一支烛', wipe: '擦拭了墓碑', bow: '在墓前鞠躬' }
+const SHORT = { flower: '献花', incense: '上香', candle: '点烛', wipe: '擦碑', bow: '鞠躬' }
+let hintUntil = 0
+function hint(kind) {
+  const now = Date.now()
+  hints = hints.filter((h) => now - h.t < 5000); hints.push({ kind, t: now })
+  const kinds = [...new Set(hints.map((h) => h.kind))]
+  $('hint').textContent = hints.length === 1 ? '有人刚刚' + VERB[kind] : kinds.length === 1 ? '亲友们刚刚' + VERB[kind] : '亲友们刚刚' + kinds.map((k) => SHORT[k]).join('、')
+  $('hint').classList.add('show'); hintUntil = now + 3000
+}
+let simState = 0
+function simulate() {
+  if (!scene) return
+  const steps = [
+    () => { $('online').textContent = 2; scene.setPeers([{ key: 'p1' }]) },
+    () => { addOffering('flower', 'huangju', 'p1'); hint('flower') },
+    () => { addOffering('incense', null, 'p1'); hint('incense'); setTimeout(() => { scene.peerBow('p1'); hint('bow') }, 1800) },
+    () => { $('online').textContent = 3; scene.setPeers([{ key: 'p1' }, { key: 'p2' }]); addOffering('candle', null, 'p2'); hint('candle') },
+    () => { setWipe(Math.min(1, (cur.wipe || 0) + 0.2)); hint('wipe') },
+    () => { $('online').textContent = 2; scene.setPeers([{ key: 'p2' }]) }
+  ]
+  if (simState < steps.length) steps[simState++]()
+}
+
+// ---------- 抽屉 ----------
+function openSheet(kind) {
+  const b = $('sheetBody')
+  if (kind === 'flower') b.innerHTML = `<div class="st">献一束花</div><div class="flowers">${[['baiju', '白菊'], ['huangju', '黄菊'], ['cuibai', '翠柏']].map(([id, n]) => `<div class="flower" onclick="closeSheet();offer('flower','${id}')"><div class="fd f-${id}"></div>${n}</div>`).join('')}</div><div class="muted" style="text-align:center">基础鲜花免费，花会在碑前留 30 天。</div>`
+  if (kind === 'message') renderMessages()
+  if (kind === 'settings') renderSettings()
+  if (kind === 'invite') b.innerHTML = `<div class="st">邀请亲友</div><div class="muted" style="text-align:center;margin-bottom:14px">只有收到邀请的人能进入这座墓。正式版直接转发给微信好友或群，分享卡片标题为「来为${esc(cur.name)}扫扫墓」。</div><button class="btn" onclick="toast('演示版不发送；小程序里会打开微信转发')">转发给微信好友或群</button>`
+  $('mask').classList.add('on'); $('sheet').classList.add('open')
+  $('sheet').dataset.kind = kind
+}
+function closeSheet() { $('mask').classList.remove('on'); $('sheet').classList.remove('open') }
+let asCreator = true
+function renderMessages() {
+  const list = cur.ins.slice().reverse()
+  $('sheetBody').innerHTML = `<div class="st">留言</div>
+    <div class="chips" style="justify-content:center;margin-bottom:8px"><span class="chip ${asCreator ? 'on' : ''}" onclick="asCreator=true;renderMessages()">我是建墓人</span><span class="chip ${!asCreator ? 'on' : ''}" onclick="asCreator=false;renderMessages()">看看亲友视角</span></div>
+    <div style="max-height:34vh;overflow-y:auto">${list.filter((x) => x.status === 'approved' || asCreator || x.mine).map((x) => `
+      <div class="ins"><div class="b">${esc(x.body)}</div><div class="m">${esc(x.name)}${x.status === 'pending' ? '<span class="t2">审核中</span>' : ''}</div>
+      ${asCreator && x.status === 'pending' ? `<button class="mb ok" onclick="mod('${x.id}','approved')">通过</button><button class="mb" onclick="mod('${x.id}','rejected')">不通过</button>` : ''}</div>`).join('') || '<div class="muted" style="text-align:center;padding:20px">还没有留言。</div>'}</div>
+    <textarea id="draft" maxlength="140" placeholder="写下想说的话（140 字以内，审核通过后亲友可见）" style="margin:10px 0"></textarea>
+    <button class="btn" onclick="postMsg()">留下</button>`
+}
+function postMsg() {
+  const body = ($('draft').value || '').trim()
+  if (!body) return toast('请写下想说的话')
+  if (containsContact(body)) return toast('这条留言未能发布，请修改后再试')
+  cur.ins.push({ id: 'i' + Date.now(), body, name: '来访的亲人', status: 'pending', mine: true, at: Date.now() })
+  if (!cur.sample) save(); renderMessages(); updateBadge(); toast('已提交，审核通过后亲友可见')
+}
+function mod(id, st) { const x = cur.ins.find((i) => i.id === id); if (x) x.status = st; if (st === 'rejected') cur.ins = cur.ins.filter((i) => i.id !== id); if (!cur.sample) save(); renderMessages(); updateBadge() }
+function updateBadge() { const n = cur.ins.filter((x) => x.status === 'pending').length; $('badge').style.display = n ? 'flex' : 'none'; $('badge').textContent = n }
+function renderSettings() {
+  const row = (label, key, opts) => `<div class="field"><div class="label">${label}</div><div class="chips">${opts.map(([v, n]) => `<span class="chip ${env[key] === v ? 'on' : ''}" onclick="setEnv('${key}','${v}')">${n}</span>`).join('')}</div></div>`
+  $('sheetBody').innerHTML = `<div class="st">场景（只改变你自己的画面）</div>` +
+    row('季节', 'season', [['', '跟随墓园'], ['spring', '春日花开'], ['summer', '夏日林荫'], ['autumn', '秋日落叶'], ['winter', '冬日飘雪']]) +
+    row('昼夜', 'tod', [['auto', '跟随本地时间'], ['day', '白昼'], ['night', '夜晚']]) +
+    row('天气', 'weather', [['clear', '晴'], ['cloudy', '阴'], ['rain', '细雨']]) +
+    row('画质', 'quality', [['standard', '标准'], ['smooth', '流畅']])
+}
+function setEnv(k, v) { env[k] = v; applyEnv(); renderSettings() }
+
+window.addEventListener('resize', () => { if ($('tomb').classList.contains('on') && scene) { const c = $('scene'), r = c.getBoundingClientRect(), pr = Math.min(2, window.devicePixelRatio || 1); c.width = r.width * pr; c.height = r.height * pr; c.getContext('2d').setTransform(pr, 0, 0, pr, 0, 0); scene.resize(r.width, r.height); scene.setWipeLevel(cur.wipe || 0) } })
+;['phone', 'tomb'].forEach((id) => $(id).addEventListener('scroll', (e) => { e.target.scrollTop = 0 }))
+renderHome()
+</script>
+</body>
+</html>

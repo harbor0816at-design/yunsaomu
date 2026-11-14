@@ -1,0 +1,10 @@
+// 把小程序的场景引擎内联进演示页：node demo/build.js → demo/index.html
+const fs = require('fs')
+const path = require('path')
+const root = path.join(__dirname, '..')
+const strip = (src) => src.replace(/^const \{[^}]+\} = require\('\.\/color'\)\n/m, '').replace(/module\.exports = [^\n]+\n?/g, '')
+const color = strip(fs.readFileSync(path.join(root, 'scene/color.js'), 'utf8'))
+const engine = strip(fs.readFileSync(path.join(root, 'scene/engine.js'), 'utf8'))
+const tpl = fs.readFileSync(path.join(__dirname, 'template.html'), 'utf8')
+fs.writeFileSync(path.join(__dirname, 'index.html'), tpl.replace('/*ENGINE*/', () => color + '\n' + engine))
+console.log('demo/index.html written')
