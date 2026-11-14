@@ -1,0 +1,103 @@
+<view class="wrap">
+  <!-- 第一屏：同意声明 + 姓名/称呼 -->
+  <view wx:if="{{step === 1}}">
+    <view class="consent" bindtap="toggleConsent">
+      <view class="box {{consent ? 'on' : ''}}">{{consent ? '✓' : ''}}</view>
+      <view class="consent-text">
+        我有权为这位亲人发布纪念内容；纪念墓仅持链接的人可见；留言等内容会经过审核。我已阅读
+        <text class="a" catchtap="goLegal" data-doc="privacy">《隐私政策》</text>和
+        <text class="a" catchtap="goLegal" data-doc="terms">《用户协议》</text>。
+      </view>
+    </view>
+
+    <view class="field">
+      <view class="label">逝者姓名或纪念称呼<text class="req">*</text></view>
+      <input class="input" value="{{name}}" maxlength="40" placeholder="例如：奶奶、外公、王秀英" bindinput="onName" />
+      <view wx:if="{{nameErr}}" class="err">{{nameErr}}</view>
+    </view>
+
+    <view class="muted hint">只填称呼就可以建立。其余信息都是选填，之后也能补。</view>
+    <button class="btn" bindtap="next">下一步</button>
+  </view>
+
+  <!-- 第二屏：选填项，园景已预选，可直接建立 -->
+  <view wx:if="{{step === 2}}">
+    <view class="who">为「{{name}}」建一座纪念墓</view>
+
+    <view class="field">
+      <view class="label">墓园场景<text class="req">*</text></view>
+      <view class="chips">
+        <view wx:for="{{scenes}}" wx:key="id" class="chip {{sceneTheme === item.id ? 'on' : ''}}" data-id="{{item.id}}" bindtap="setScene">{{item.name}}</view>
+      </view>
+    </view>
+
+    <view class="field">
+      <view class="label">出生（选填）</view>
+      <view class="chips">
+        <view wx:for="{{precisions}}" wx:key="id" class="chip {{birthPrec === item.id ? 'on' : ''}}" data-id="{{item.id}}" bindtap="setBirthPrec">{{item.name}}</view>
+      </view>
+      <view class="date-row">
+        <picker mode="date" fields="{{birthPrec}}" start="1800-01-01" end="{{today}}" value="{{birth}}" bindchange="onBirth">
+          <view class="input picker">{{birth || '选择日期'}}</view>
+        </picker>
+        <text wx:if="{{birth}}" class="clear" bindtap="clearBirth">清除</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <view class="label">离世（选填）</view>
+      <view class="chips">
+        <view wx:for="{{precisions}}" wx:key="id" class="chip {{deathPrec === item.id ? 'on' : ''}}" data-id="{{item.id}}" bindtap="setDeathPrec">{{item.name}}</view>
+      </view>
+      <view class="date-row">
+        <picker mode="date" fields="{{deathPrec}}" start="1800-01-01" end="{{today}}" value="{{death}}" bindchange="onDeath">
+          <view class="input picker">{{death || '选择日期'}}</view>
+        </picker>
+        <text wx:if="{{death}}" class="clear" bindtap="clearDeath">清除</text>
+      </view>
+    </view>
+
+    <view class="field">
+      <view class="label">墓志铭（选填，80 字以内）</view>
+      <textarea class="textarea" value="{{epitaph}}" maxlength="80" placeholder="想刻在碑上的一句话" bindinput="onEpitaph" auto-height />
+    </view>
+
+    <view class="more" bindtap="toggleMore">更多设置 {{showMore ? '︿' : '﹀'}}</view>
+    <view wx:if="{{showMore}}">
+      <view class="field">
+        <view class="label">真实墓地地址（选填，默认仅你自己可见）</view>
+        <input class="input" value="{{address}}" maxlength="120" placeholder="省市 + 墓园名 + 区排号" bindinput="onAddress" />
+        <view class="muted small">不会出现在分享卡片和访客页面里。</view>
+      </view>
+      <view class="field">
+        <view class="label">墓碑样式</view>
+        <view class="chips">
+          <view wx:for="{{styles}}" wx:key="id" class="chip {{stele === item.id ? 'on' : ''}}" data-id="{{item.id}}" bindtap="setStele">{{item.name}}</view>
+        </view>
+      </view>
+      <view class="field switch-row" bindtap="toggleShareName">
+        <view class="label nomb">分享卡片里显示称呼</view>
+        <switch checked="{{showNameInShare}}" color="#d8c79a" />
+      </view>
+    </view>
+
+    <view wx:if="{{err}}" class="err big">{{err}}</view>
+    <view class="actions">
+      <button class="btn ghost" bindtap="back">上一步</button>
+      <button class="btn grow" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">建立</button>
+    </view>
+  </view>
+
+  <!-- 建立成功：管理链接说明（账号上线前它是唯一凭证），可一键进入场景 -->
+  <view wx:if="{{created}}" class="mask">
+    <view class="dialog">
+      <view class="d-title">纪念墓已建好</view>
+      <view class="d-body">
+        这座墓的管理权限已保存在这台手机上。为防换手机后丢失，建议复制一份「管理链接」存到只有你能看到的地方，<text class="warn">不要发给别人</text>。
+      </view>
+      <view class="d-body muted">邀请亲友：进墓后点右上角「…」或底部「邀请」，直接转发给微信好友即可。</view>
+      <button class="btn ghost" bindtap="copyAdmin">复制管理链接</button>
+      <button class="btn" bindtap="enterTomb">进入纪念墓</button>
+    </view>
+  </view>
+</view>

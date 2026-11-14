@@ -1,0 +1,124 @@
+<view class="page">
+  <canvas type="2d" id="scene" class="scene"
+    bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></canvas>
+
+  <!-- 顶栏：返回 / 称呼 / 在场人数（避开胶囊按钮） -->
+  <view class="top" style="top: {{navTop}}px; height: {{navH}}px;">
+    <view class="back" bindtap="goBack">‹</view>
+    <view class="pill name" wx:if="{{status === 'ready'}}">{{tombName}}</view>
+    <view class="pill online" wx:if="{{status === 'ready'}}"><text class="dot {{live ? 'on' : ''}}"></text>{{online}} 人在墓前</view>
+  </view>
+  <view class="tools" style="top: {{navTop + navH + 10}}px;" wx:if="{{status === 'ready'}}">
+    <view class="icon" bindtap="openSettings">设</view>
+    <view class="icon" bindtap="openInvite" wx:if="{{canShare}}">邀</view>
+  </view>
+
+  <!-- 他人动作短提示：一行，约 3 秒消失，不可点开 -->
+  <view class="hint {{hintOn ? 'show' : ''}}" style="top: {{navTop + navH + 14}}px;">{{hint}}</view>
+
+  <view class="wipe-tip" wx:if="{{status === 'ready' && wipeTip}}">在碑面上来回滑动，可以擦拭墓碑</view>
+
+  <!-- 仪式栏：五种动作 + 留言（纸钱不在主栏） -->
+  <view class="bar" wx:if="{{status === 'ready'}}">
+    <view class="act" bindtap="openFlowers"><view class="g">花</view><text>献花</text></view>
+    <view class="act" bindtap="doIncense"><view class="g">香</view><text>上香</text></view>
+    <view class="act" bindtap="doCandle"><view class="g">烛</view><text>点烛</text></view>
+    <view class="act" bindtap="wipeOnce"><view class="g">拭</view><text>擦碑</text></view>
+    <view class="act {{bowing ? 'on' : ''}}" bindtap="toggleBow"><view class="g">躬</view><text>{{bowing ? '停下' : '鞠躬'}}</text></view>
+    <view class="act" bindtap="openMessages"><view class="g">言<view class="badge" wx:if="{{pendingCount}}">{{pendingCount}}</view></view><text>留言</text></view>
+  </view>
+
+  <!-- 加载与错误 -->
+  <view class="cover" wx:if="{{status === 'loading'}}"><view class="muted">正在前往墓园…</view></view>
+  <view class="cover" wx:if="{{status === 'error'}}">
+    <view class="err-msg">{{errMsg}}</view>
+    <button class="btn" bindtap="goHome">回到首页</button>
+  </view>
+
+  <!-- 底部抽屉 -->
+  <view class="mask" wx:if="{{sheet}}" bindtap="closeSheet"></view>
+  <view class="sheet {{sheet ? 'open' : ''}}" catchtap="noop" catchtouchmove="noop">
+    <view class="grab"></view>
+
+    <view wx:if="{{sheet === 'flower'}}">
+      <view class="s-title">献一束花</view>
+      <view class="flowers">
+        <view wx:for="{{flowers}}" wx:key="id" class="flower" data-id="{{item.id}}" bindtap="pickFlower">
+          <view class="f-dot f-{{item.id}}"></view>
+          <text>{{item.name}}</text>
+        </view>
+      </view>
+      <view class="muted center">基础鲜花免费，花会在碑前留 30 天。</view>
+    </view>
+
+    <view wx:if="{{sheet === 'message'}}">
+      <view class="s-title">留言</view>
+      <scroll-view scroll-y class="ins-list">
+        <view wx:if="{{!inscriptions.length}}" class="muted center pad">还没有留言。</view>
+        <view wx:for="{{inscriptions}}" wx:key="id" class="ins">
+          <view class="ins-body">{{item.body}}</view>
+          <view class="ins-meta">
+            <text>{{item.displayName}} · {{item.time}}</text>
+            <text wx:if="{{item.status === 'pending'}}" class="tag">审核中</text>
+            <text wx:if="{{item.status === 'rejected'}}" class="tag dim">未通过</text>
+            <text wx:if="{{item.status === 'removed'}}" class="tag dim">已删除</text>
+          </view>
+          <view class="mod" wx:if="{{role === 'creator' && item.status === 'pending'}}">
+            <text class="mbtn ok" data-id="{{item.id}}" data-action="approve" bindtap="moderate">通过</text>
+            <text class="mbtn" data-id="{{item.id}}" data-action="reject" bindtap="moderate">不通过</text>
+          </view>
+          <view class="mod" wx:if="{{role === 'creator' && item.status === 'approved'}}">
+            <text class="mbtn" data-id="{{item.id}}" data-action="remove" bindtap="moderate">删除</text>
+          </view>
+        </view>
+      </scroll-view>
+      <textarea class="textarea compose" value="{{draft}}" maxlength="140" placeholder="写下想说的话（140 字以内，审核通过后亲友可见）" bindinput="onDraft" fixed cursor-spacing="20" />
+      <button class="btn" bindtap="postMessage" loading="{{posting}}" disabled="{{posting}}">留下</button>
+    </view>
+
+    <view wx:if="{{sheet === 'settings'}}">
+      <view class="s-title">场景与我</view>
+      <view class="field">
+        <view class="label">季节（只改变你自己的画面）</view>
+        <view class="chips">
+          <view class="chip {{env.season === '' ? 'on' : ''}}" data-key="season" data-val="" bindtap="setEnvKey">跟随墓园</view>
+          <view wx:for="{{seasons}}" wx:key="id" class="chip {{env.season === item.id ? 'on' : ''}}" data-key="season" data-val="{{item.id}}" bindtap="setEnvKey">{{item.name}}</view>
+        </view>
+      </view>
+      <view class="field">
+        <view class="label">昼夜</view>
+        <view class="chips">
+          <view wx:for="{{tods}}" wx:key="id" class="chip {{env.tod === item.id ? 'on' : ''}}" data-key="tod" data-val="{{item.id}}" bindtap="setEnvKey">{{item.name}}</view>
+        </view>
+      </view>
+      <view class="field">
+        <view class="label">天气</view>
+        <view class="chips">
+          <view wx:for="{{weathers}}" wx:key="id" class="chip {{env.weather === item.id ? 'on' : ''}}" data-key="weather" data-val="{{item.id}}" bindtap="setEnvKey">{{item.name}}</view>
+        </view>
+      </view>
+      <view class="field">
+        <view class="label">画质</view>
+        <view class="chips">
+          <view class="chip {{env.quality === 'standard' ? 'on' : ''}}" data-key="quality" data-val="standard" bindtap="setEnvKey">标准</view>
+          <view class="chip {{env.quality === 'smooth' ? 'on' : ''}}" data-key="quality" data-val="smooth" bindtap="setEnvKey">流畅</view>
+        </view>
+      </view>
+      <view class="field">
+        <view class="label">我的显示名</view>
+        <view class="name-row">
+          <input class="input grow" value="{{displayName}}" maxlength="20" bindinput="onDisplayName" />
+          <button class="btn mini" bindtap="saveDisplayName">保存</button>
+        </view>
+        <view wx:if="{{nameErr}}" class="err">{{nameErr}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{sheet === 'invite'}}">
+      <view class="s-title">邀请亲友</view>
+      <view class="muted center">只有收到邀请的人能进入这座墓。</view>
+      <button class="btn share" open-type="share">转发给微信好友或群</button>
+      <button class="btn ghost" bindtap="copyWebLink">复制网页链接</button>
+    </view>
+  </view>
+</view>

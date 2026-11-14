@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/create/create",
+    "pages/tomb/tomb",
+    "pages/legal/legal"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#1d2420",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "云扫墓",
+    "backgroundColor": "#1d2420",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "__usePrivacyCheck__": true
+}

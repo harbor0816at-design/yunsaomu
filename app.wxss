@@ -1,0 +1,40 @@
+page {
+  --ink: #f1ece2;
+  --dim: #b9b2a3;
+  --line: rgba(222, 210, 182, 0.28);
+  --panel: rgba(24, 30, 27, 0.94);
+  --accent: #d8c79a;
+  --accent-ink: #1d2420;
+  background: #1d2420;
+  color: var(--ink);
+  font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+  font-size: 30rpx;
+  line-height: 1.6;
+}
+button { font-family: inherit; }
+button::after { border: none; }
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  height: 92rpx; border-radius: 46rpx; font-size: 32rpx; letter-spacing: 4rpx;
+  background: var(--accent); color: var(--accent-ink); margin: 0; padding: 0 40rpx;
+}
+.btn.ghost { background: transparent; color: var(--ink); border: 1rpx solid var(--line); }
+.btn[disabled] { opacity: 0.45; background: var(--accent) !important; color: var(--accent-ink) !important; }
+.muted { color: var(--dim); font-size: 26rpx; }
+.field { margin-bottom: 36rpx; }
+.field .label { font-size: 28rpx; color: var(--dim); margin-bottom: 12rpx; }
+.field .label .req { color: #e2a87d; margin-left: 6rpx; }
+.input {
+  height: 88rpx; padding: 0 28rpx; border-radius: 16rpx; background: rgba(255,255,255,0.06);
+  border: 1rpx solid var(--line); color: var(--ink); font-size: 30rpx;
+}
+.textarea {
+  width: auto; min-height: 160rpx; padding: 20rpx 28rpx; border-radius: 16rpx; background: rgba(255,255,255,0.06);
+  border: 1rpx solid var(--line); color: var(--ink); font-size: 30rpx;
+}
+.err { color: #f0a58a; font-size: 26rpx; margin-top: 8rpx; }
+.chips { display: flex; flex-wrap: wrap; gap: 16rpx; }
+.chip {
+  padding: 12rpx 28rpx; border-radius: 999rpx; border: 1rpx solid var(--line); font-size: 26rpx; color: var(--ink);
+}
+.chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }

@@ -1,0 +1,26 @@
+{
+  "description": "云扫墓 · 微信小程序（V2.0 第 1 阶段）",
+  "packOptions": {
+    "ignore": [
+      { "type": "folder", "value": "backend" },
+      { "type": "folder", "value": "docs" },
+      { "type": "folder", "value": "test" }
+    ],
+    "include": []
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "uglifyFileName": false,
+    "ignoreUploadUnusedFiles": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.4.0",
+  "appid": "touristappid",
+  "projectname": "yunsaomu-mp",
+  "condition": {},
+  "editorSetting": { "tabIndent": "insertSpaces", "tabSize": 2 }
+}
