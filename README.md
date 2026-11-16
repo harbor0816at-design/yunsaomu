@@ -8,7 +8,13 @@ PRD v0.2（V2.0）第 1 阶段的微信小程序客户端：首页三入口、�
 
 ## 视觉规范
 
-对齐网页版（yunsaomu.vercel.app）的视觉交付：雾青底（`#d5d8cc`）、纸色卡片（`#f3efe4`）、松绿主色（`#3d4f40`）、宋体标题；祭奠页沿用网页版 HUD 布局——顶部返回与「N 位亲人在」，左上称呼与季节标签，右侧「景 / 晴 / 邀 / 管」圆按钮，右下「留言」，底部深色渐变仪式栏（线条图标，选中金色 `#e6c86e`），擦碑进度卡。品牌标志与仪式图标取自网页版，PNG 由 `test/gen-icons.js` 生成。场景色调为低饱和雾感并带空气透视，碑饰按网页版描述（远山纹 / 回纹 / 松针纹）。预览：`docs/ui-preview.png`、`docs/scene-preview.png`。
+画面质感参考山寺（sansatemple.com）：
+
+- **3D 墓园**（`scene3d/memorial3d.js`）：three.js r108 低多边形、平直着色的立体小院。包含远山、雾、石板路、中式门楼（朱红立柱、灰瓦顶）、两级石台和矮石栏、三式碑（碑面为刻字加灰尘的动态贴图，可滑动擦拭）、供桌香炉、烛火光、花束、四季枫树和松、石灯笼（夜里亮）、落叶 / 飘雪 / 萤火 / 细雨。自己以第三人称小人站在路上，亲友小人站在两旁，鞠躬时上身前倾。拖动可环视，双指缩放。全部为程序化原创几何体，不加载外部模型。
+- **回退**：WebGL 不可用时自动退回 2D 画面（`scene/engine.js`），接口一致。
+- **界面**：深橄榄底 `#24251f`、半透明深色面板、奶油色文字 `#fffdf3`、金色选中 `#e6d5ad`、橄榄实心按钮 `#747353`、主行动按钮为金色。首页头图和分享封面由 `test/render-hero.js` 用自家 3D 场景渲染。
+- **小程序依赖**：`libs/threejs-miniprogram.js`（微信官方 threejs-miniprogram 0.0.8 的构建产物，MIT，内含 three.js r108），不需要再 npm 构建。主包约 1.1MB。
+- 预览：`docs/ui-preview.png`、`docs/scene-preview.png`。
 
 ## 目录
 
@@ -35,7 +41,9 @@ PRD v0.2（V2.0）第 1 阶段的微信小程序客户端：首页三入口、�
 
 ```bash
 node --test test/unit.test.js        # 校验、链接解析、季节昼夜、短提示、建墓与祭奠页面流程
-node test/render-scenes.js out/      # 需要 playwright + Chrome：输出 8 张场景截图并核对擦碑与烛光亮度
+node test/render-scenes.js out/      # 2D 回退画面截图
+node test/render-3d.js out3d/        # 3D 墓园截图（headless Chrome + WebGL），核对碑面命中
+node test/render-hero.js             # 重新生成首页头图与分享封面
 ```
 
 ## 与 PRD 第 1 阶段验收项的对应
@@ -62,6 +70,6 @@ node test/render-scenes.js out/      # 需要 playwright + Chrome：输出 8 张
 
 ## 已知差异（相对网页版）
 
-- 场景是 2D 画面，没有网页版的 3D 自由行走；他人以远处剪影出现。
+- 3D 场景可环视、缩放，但不能像网页版那样自由行走；访客站位固定在路两旁。
 - 小程序端与网页端访客在同一座墓时，祭奠动作、擦碑、留言互相可见；在场人数与剪影只统计小程序端。
 - 第 1 阶段小程序不支持上传照片（需要接入微信图片内容安全，后续阶段做）。

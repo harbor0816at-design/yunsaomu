@@ -5,116 +5,119 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>云扫墓 · MVP 演示</title>
 <style>
-:root{--ink:#2a2a26;--ink-soft:#4a4a44;--paper:#e8e4d8;--paper-2:#f3efe4;--pine:#3d4f40;--pine-2:#2f3e32;--stone:#8a877c;--stone-light:#b8b4a8;--bg:#d5d8cc;--danger:#7a3a32;--ok:#3d5a42;--gold:#e6c86e;--line:#c5bfb0;--field:#faf7f0;--shadow:0 8px 28px rgba(40,40,32,.16);--serif:"Noto Serif CJK SC","Noto Serif SC","Songti SC","STSong",serif;--sans:"PingFang SC","Noto Sans CJK SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+:root{--bg:#24251f;--panel:rgba(30,31,26,.82);--ink:#fffdf3;--ink-soft:rgba(255,253,243,.74);--stone:rgba(255,253,243,.52);--line:rgba(255,253,243,.16);--field:rgba(255,253,243,.06);--olive:#747353;--olive-2:#626347;--gold:#e6d5ad;--gold-bg:rgba(180,154,96,.16);--danger:#e59c88;--ok:#a8c48e;--serif:"Noto Serif CJK SC","Noto Serif SC","Songti SC","STSong",serif;--sans:"PingFang SC","Noto Sans CJK SC","Apple SD Gothic Neo","Hiragino Sans GB","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:#c5cbb8;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+html,body{margin:0;height:100%;background:#151612;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
 #phone{position:relative;max-width:430px;height:100%;margin:0 auto;overflow:hidden;overflow:clip;background:var(--bg)}
 .screen{position:absolute;inset:0;overflow-y:auto;display:none}
 .screen.on{display:block}
-.pagebg{background:radial-gradient(ellipse at 50% 0%,#e4e7dc 0%,transparent 55%),linear-gradient(180deg,#cfd4c6,#d8dccf 40%,#c5cbb8)}
-.demo-tag{position:absolute;top:0;left:0;right:0;z-index:40;background:#3d3a30;color:#f3e7c4;font-size:11px;text-align:center;padding:3px 10px;letter-spacing:.04em;pointer-events:none}
+.pagebg{background:radial-gradient(ellipse at 50% 0%,rgba(116,115,83,.28) 0%,rgba(36,37,31,0) 60%),linear-gradient(180deg,#2a2b24 0%,#24251f 45%,#1b1c17 100%)}
+.demo-tag{position:absolute;top:0;left:0;right:0;z-index:40;background:rgba(20,21,17,.85);color:var(--gold);font-size:11px;text-align:center;padding:3px 10px;letter-spacing:.04em;pointer-events:none}
 button{font-family:inherit;cursor:pointer}
-.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;padding:12px 20px;border:0;border-radius:14px;font-size:16px;letter-spacing:.04em;background:var(--pine);color:var(--paper-2);box-shadow:var(--shadow);transition:transform .12s,background .12s}
-.btn:active{transform:scale(.98);background:var(--pine-2)}
-.btn.ghost{background:transparent;color:var(--pine);box-shadow:none;border:1px solid #8a9584}
-.btn.small{min-height:44px;font-size:14px;padding:8px 14px}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;padding:12px 18px;border:0;border-radius:8px;font-size:15px;font-weight:500;letter-spacing:.04em;background:var(--olive);color:var(--ink);transition:transform .12s,background .12s}
+.btn:active{transform:scale(.98);background:var(--olive-2)}
+.btn.gold{background:var(--gold);color:#24251f}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.small{min-height:42px;font-size:14px;padding:8px 14px}
 .muted{color:var(--stone);font-size:12px}
-.card{background:#f3efe4eb;border:1px solid rgba(90,86,74,.12);border-radius:18px;padding:22px 20px 24px;box-shadow:var(--shadow)}
-.card h2{font-family:var(--serif);font-size:22px;margin:0 0 8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px 18px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.card h2{font-family:var(--serif);font-size:21px;margin:0 0 8px}
 .card h3{font-family:var(--serif);font-size:17px;margin:0 0 8px}
-.sub{color:var(--ink-soft);font-size:13px;line-height:1.6;margin-bottom:16px}
-/* 首页 */
-#home{padding:52px 22px 30px}
-.brand{display:flex;flex-direction:column;align-items:center;gap:10px;margin:8px 0 28px;text-align:center}
-.brand svg{width:64px;height:64px}
-.brand h1{font-family:var(--serif);font-weight:700;font-size:32px;letter-spacing:.18em;margin:0}
-.slogan{font-family:var(--serif);font-size:19px;letter-spacing:.12em}
-.brand p{margin:0;max-width:28em;line-height:1.7;color:var(--ink-soft);font-size:15px}
+.sub{color:var(--ink-soft);font-size:13px;line-height:1.65;margin-bottom:16px}
+#home{padding:0 20px 30px}
+.hero{position:relative;height:380px;margin:0 -20px}
+.hero img{width:100%;height:100%;object-fit:cover;display:block}
+.hero .fade{position:absolute;left:0;right:0;bottom:0;height:180px;background:linear-gradient(180deg,rgba(36,37,31,0),#24251f)}
+.brand{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;margin:-96px 0 24px;text-align:center}
+.brand h1{font-family:var(--serif);font-weight:700;font-size:32px;letter-spacing:.18em;margin:0;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.slogan{font-family:var(--serif);font-size:18px;letter-spacing:.12em;color:var(--gold)}
+.brand p{margin:0;max-width:28em;line-height:1.7;color:var(--ink-soft);font-size:14px}
 .actions{display:flex;flex-direction:column;gap:12px}
 .panel{margin-top:16px}
-.row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #e0d9c8;cursor:pointer}
+.row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .row .n{flex:1;font-family:var(--serif);font-size:16px}
 .row small{display:block;color:var(--stone);font-size:12px;font-family:var(--sans)}
-.link{color:var(--pine);text-decoration:underline;cursor:pointer}
+.link{color:var(--gold);cursor:pointer}
 .footer{margin-top:28px;text-align:center;font-size:12px;color:var(--stone);display:flex;flex-wrap:wrap;gap:6px 10px;justify-content:center}
-.footer a{color:var(--pine)}
-.pending{background:#efe3c0;color:#6a4a12;font-weight:600;padding:1px 7px;border-radius:6px}
+.footer a{color:var(--ink-soft)}
+.pending{background:var(--gold-bg);color:var(--gold);padding:1px 7px;border-radius:5px}
 .mvp{font-size:12px;color:var(--ink-soft);line-height:1.7;margin-top:18px;border-top:1px dashed var(--line);padding-top:12px}
-.mvp b{color:var(--pine)}
-/* 建墓 */
+.mvp b{color:var(--gold);font-weight:500}
 #create{padding:44px 16px 30px}
-.steps{display:flex;gap:6px;margin-bottom:16px}.steps span{flex:1;height:4px;border-radius:4px;background:#cfc8b8}.steps span.on{background:var(--pine)}
+.steps{display:flex;gap:6px;margin-bottom:16px}.steps span{flex:1;height:3px;border-radius:3px;background:var(--line)}.steps span.on{background:var(--gold)}
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .label,.opt-title{font-size:13px;color:var(--ink-soft)}
-.opt-title{margin:12px 0 6px;font-weight:600}
-input,textarea{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--ink);padding:10px 12px;font-size:16px;font-family:inherit}
-textarea{min-height:88px;resize:none}
-.err{color:var(--danger);font-size:13px;margin:4px 0 10px;min-height:0}
+.opt-title{margin:12px 0 6px;color:var(--stone)}
+input,textarea{width:100%;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);padding:10px 12px;font-size:16px;font-family:inherit}
+input::placeholder,textarea::placeholder{color:rgba(255,253,243,.34)}
+textarea{min-height:84px;resize:none}
+.err{color:var(--danger);font-size:13px;margin:4px 0 10px}
 .consent{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;margin:12px 0 16px;color:var(--ink-soft);cursor:pointer}
-.box{flex:none;width:18px;height:18px;border-radius:4px;border:1px solid #8a9584;background:var(--field);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--paper-2);margin-top:2px}
-.box.on{background:var(--pine);border-color:var(--pine)}
+.box{flex:none;width:18px;height:18px;border-radius:4px;border:1px solid rgba(255,253,243,.34);background:var(--field);display:flex;align-items:center;justify-content:center;font-size:12px;color:#24251f;margin-top:2px}
+.box.on{background:var(--gold);border-color:var(--gold)}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
-.seg-btn{min-height:40px;padding:6px 12px;border-radius:10px;border:1px solid #b9b4a4;background:var(--field);color:var(--ink);font-size:14px;cursor:pointer;display:flex;align-items:center}
-.seg-btn.on{background:var(--pine);color:var(--paper-2);border-color:var(--pine)}
+.seg-btn{min-height:38px;padding:6px 12px;border-radius:7px;border:1px solid var(--line);background:var(--field);color:var(--ink-soft);font-size:13px;cursor:pointer;display:flex;align-items:center}
+.seg-btn.on{background:var(--gold-bg);color:var(--gold);border-color:rgba(230,213,173,.55)}
 .styles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.style-opt{border:2px solid var(--line);border-radius:12px;background:var(--field);padding:10px 8px;text-align:center;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer}
-.style-opt.picked{border-color:var(--pine);background:#e8ece3}
+.style-opt{border:1px solid var(--line);border-radius:9px;background:var(--field);padding:10px 8px;text-align:center;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.style-opt.picked{border-color:rgba(230,213,173,.6);background:var(--gold-bg)}
+.style-opt.picked strong{color:var(--gold)}
 .style-opt strong{font-family:var(--serif);font-size:14px}.style-opt small{font-size:11px;color:var(--ink-soft);line-height:1.4}
 .two{display:flex;gap:10px;margin-top:8px}.two .btn{flex:1}.two .btn.grow{flex:2}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-/* 场景 */
-#tomb{overflow:hidden;overflow:clip;background:#b8c2b6}
+#tomb{overflow:hidden;overflow:clip;background:#1b1c17}
 #scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
-.hud-top{position:absolute;top:28px;left:10px;right:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:5}
-.hud-l,.hud-r{display:flex;align-items:center;gap:8px}
-.icon-btn{position:relative;width:40px;height:40px;border-radius:50%;border:0;background:#f3efe4e6;color:var(--ink);display:grid;place-items:center;box-shadow:0 2px 10px #28282024;font-size:14px;padding:0}
-.icon-btn svg{width:20px;height:20px}
-.icon-btn.on{background:var(--pine);color:var(--paper)}
-.presence-chip{background:#f3efe4eb;border-radius:999px;padding:0 14px;height:40px;font-size:13px;box-shadow:0 2px 10px #28282024;display:flex;align-items:center;white-space:nowrap}
-.tomb-title{position:absolute;top:78px;left:12px;z-index:5;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
-.season-chip,.name-chip{font-size:12px;background:#f3efe4db;border-radius:999px;padding:3px 10px;border:0;color:var(--ink-soft)}
-.name-chip.strong{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);padding:4px 12px}
-.name-chip.btnlike{cursor:pointer}
-.badge-dot{position:absolute;right:-3px;top:-3px;min-width:16px;height:16px;border-radius:8px;background:var(--danger);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 3px}
-.action-toast{position:absolute;left:50%;top:150px;transform:translateX(-50%);z-index:25;background:#242622db;color:var(--paper-2);font-size:13px;padding:8px 16px;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .3s}
+.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(10,10,8,.42) 100%)}
+.hud-top{position:absolute;top:26px;left:10px;right:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:5}
+.hud-l,.hud-r{display:flex;align-items:center;gap:7px}
+.icon-btn{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,253,243,.14);background:rgba(30,31,26,.72);color:var(--ink);display:grid;place-items:center;font-size:14px;padding:0}
+.icon-btn svg{width:19px;height:19px}
+.icon-btn.on{background:var(--gold-bg);color:var(--gold);border-color:rgba(230,213,173,.5)}
+.presence-chip{background:rgba(30,31,26,.72);border:1px solid rgba(255,253,243,.14);border-radius:999px;padding:0 13px;height:34px;font-size:12px;display:flex;align-items:center;white-space:nowrap}
+.tomb-title{position:absolute;top:72px;left:12px;z-index:5;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.season-chip,.name-chip{font-size:12px;background:rgba(30,31,26,.6);border-radius:999px;padding:3px 10px;color:var(--ink-soft)}
+.name-chip.strong{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--gold);padding:4px 12px;background:rgba(30,31,26,.72)}
+.badge-dot{position:absolute;right:-3px;top:-3px;min-width:16px;height:16px;border-radius:8px;background:#b4463c;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+.action-toast{position:absolute;left:50%;top:150px;transform:translateX(-50%);z-index:25;background:rgba(20,21,17,.82);border:1px solid rgba(255,253,243,.12);color:var(--ink);font-size:13px;padding:8px 16px;border-radius:999px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .3s}
 .action-toast.show{opacity:1}
-.side-actions{position:absolute;right:10px;bottom:96px;z-index:5;display:flex;flex-direction:column;gap:8px}
-.side-btn{width:60px;min-height:56px;border:0;border-radius:14px;background:#f3efe4eb;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;box-shadow:0 2px 10px #28282029;padding:0}
-.side-btn svg{width:22px;height:22px}
-.wipe-panel{position:absolute;left:50%;transform:translateX(-50%);bottom:96px;width:min(260px,calc(100% - 96px));z-index:6;background:#f3efe4f0;border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);font-size:12px;color:var(--ink-soft);opacity:0;transition:opacity .3s;pointer-events:none}
+.gesture-tip{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);z-index:4;font-size:12px;color:var(--ink-soft);background:rgba(20,21,17,.6);padding:5px 13px;border-radius:999px;white-space:nowrap;pointer-events:none;transition:opacity .6s}
+.side-actions{position:absolute;right:10px;bottom:92px;z-index:5;display:flex;flex-direction:column;gap:8px}
+.side-btn{width:58px;min-height:54px;border:1px solid rgba(255,253,243,.14);border-radius:11px;background:rgba(30,31,26,.72);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;padding:0}
+.side-btn svg{width:21px;height:21px}
+.wipe-panel{position:absolute;left:50%;transform:translateX(-50%);bottom:92px;width:min(250px,calc(100% - 96px));z-index:6;background:rgba(30,31,26,.88);border:1px solid rgba(255,253,243,.14);border-radius:11px;padding:10px 12px;font-size:12px;color:var(--ink-soft);opacity:0;transition:opacity .3s;pointer-events:none}
 .wipe-panel.show{opacity:1}
-.wipe-panel strong{color:var(--ink);font-size:14px}
+.wipe-panel strong{color:var(--ink);font-size:14px;font-weight:600}
 .wipe-panel .r{display:flex;justify-content:space-between;align-items:center}
-.wipe-bar{height:6px;border-radius:6px;background:#d5cfbf;margin-top:6px;overflow:hidden}.wipe-bar i{display:block;height:100%;background:var(--pine);width:0;transition:width .2s}
-.ritual-bar{position:absolute;left:0;right:0;bottom:0;padding:8px 6px 10px;display:flex;justify-content:space-around;gap:2px;background:linear-gradient(180deg,#2a2a2600,#2a2a2673 18%,#242622e0);z-index:5}
-.ritual-btn{flex:1;min-width:0;min-height:56px;border:0;background:transparent;color:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;letter-spacing:.04em;padding:0}
+.wipe-bar{height:5px;border-radius:5px;background:rgba(255,253,243,.14);margin-top:6px;overflow:hidden}.wipe-bar i{display:block;height:100%;background:var(--gold);width:0;transition:width .2s}
+.ritual-bar{position:absolute;left:0;right:0;bottom:0;padding:9px 6px 10px;display:flex;justify-content:space-around;gap:2px;background:linear-gradient(180deg,rgba(27,28,23,0),rgba(27,28,23,.6) 22%,rgba(27,28,23,.94));z-index:5}
+.ritual-btn{flex:1;min-width:0;min-height:56px;border:0;background:transparent;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;letter-spacing:.04em;padding:0}
 .ritual-btn svg{width:24px;height:24px}
 .ritual-btn.active{color:var(--gold)}
 .ritual-btn:active svg{transform:scale(.92)}
-.mask{position:absolute;inset:0;background:#3236304d;z-index:9;display:none}
+.mask{position:absolute;inset:0;background:rgba(10,10,8,.4);z-index:9;display:none}
 .mask.on{display:block}
-.sheet{position:absolute;left:0;right:0;bottom:0;z-index:10;background:var(--paper-2);border-radius:18px 18px 0 0;padding:16px 16px 20px;box-shadow:0 -8px 32px #0003;max-height:76%;overflow:auto;transform:translateY(105%);transition:transform .26s ease}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:10;background:rgba(30,31,26,.97);border-top:1px solid var(--line);border-radius:16px 16px 0 0;padding:16px 16px 20px;max-height:76%;overflow:auto;transform:translateY(105%);transition:transform .26s ease}
 .sheet.open{transform:none}
 .close-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.close-row h3{font-family:var(--serif);margin:0;font-size:18px}
-.close-row button{border:0;background:none;color:var(--pine);font-size:14px}
+.close-row h3{font-family:var(--serif);margin:0;font-size:17px}
+.close-row button{border:0;background:none;color:var(--gold);font-size:14px}
 .flower-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
-.flower-opt{border:2px solid var(--line);border-radius:12px;background:var(--field);min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:14px}
-.flower-opt:active{border-color:var(--pine)}
+.flower-opt{border:1px solid var(--line);border-radius:10px;background:var(--field);min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:14px}
+.flower-opt:active{border-color:rgba(230,213,173,.6);background:var(--gold-bg)}
 .fd{width:44px;height:44px;border-radius:50%}
-.f-baiju{background:radial-gradient(circle,#e8cf6a 18%,#f7f4ea 22%,#f7f4ea 60%,#dcd6c4 100%);box-shadow:inset 0 0 0 1px #ddd6c4}
+.f-baiju{background:radial-gradient(circle,#e8cf6a 18%,#f7f4ea 22%,#f7f4ea 60%,#dcd6c4 100%)}
 .f-huangju{background:radial-gradient(circle,#b9822a 18%,#f2c94c 22%,#f2c94c 60%,#d9a92e 100%)}
 .f-cuibai{background:radial-gradient(circle,#6f9a63 20%,#4f7d4f 60%,#3a6440 100%)}
 .msg-list{list-style:none;margin:0 0 10px;padding:0;max-height:32vh;overflow:auto}
-.msg-list li{padding:10px 0;border-bottom:1px solid #e0d9c8;font-size:14px;line-height:1.55;word-break:break-all}
+.msg-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.6;word-break:break-all}
 .msg-list .meta{font-size:12px;color:var(--stone);margin-bottom:2px}
-.badge{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;background:#e4ddc8;color:var(--ink-soft);margin-left:6px}
-.badge.wait{background:#efe3c0}
-.mb{font-size:12px;padding:4px 12px;border-radius:10px;border:1px solid #b9b4a4;background:var(--field);color:var(--ink);margin:6px 6px 0 0}
-.mb.ok{background:var(--pine);color:var(--paper-2);border-color:var(--pine)}
-.toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:#242622e6;color:var(--paper-2);padding:9px 16px;border-radius:10px;font-size:14px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:80%;text-align:center}
+.badge{display:inline-block;font-size:11px;padding:1px 6px;border-radius:5px;background:rgba(255,253,243,.1);color:var(--ink-soft);margin-left:6px}
+.badge.wait{background:var(--gold-bg);color:var(--gold)}
+.mb{font-size:12px;padding:4px 12px;border-radius:7px;border:1px solid var(--line);background:var(--field);color:var(--ink);margin:6px 6px 0 0}
+.mb.ok{background:var(--olive);border-color:var(--olive)}
+.toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(20,21,17,.92);border:1px solid var(--line);color:var(--ink);padding:9px 16px;border-radius:9px;font-size:14px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:80%;text-align:center}
 .toast.on{opacity:1}
-.dlg{position:absolute;inset:0;background:#32363073;display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.dlg{position:absolute;inset:0;background:rgba(10,10,8,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
 .dlg.on{display:flex}
 .dlg .card{display:flex;flex-direction:column;gap:12px;width:100%}
 .warn{color:var(--danger)}
@@ -125,10 +128,11 @@ textarea{min-height:88px;resize:none}
   <div class="demo-tag">MVP 演示 · 数据只存在本机浏览器 · 亲友到访为模拟</div>
 
   <section id="home" class="screen on pagebg">
-    <div class="brand"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#3d4f40"/><path d="M8 50 Q20 42 32 50 Q44 42 56 50 L56 58 L8 58 Z" fill="#8a9a82"/><path d="M18 40 C18 22 26 16 32 12 C38 16 46 22 46 40 L42 40 C42 28 36 22 32 20 C28 22 22 28 22 40 Z" fill="#c9c3b0"/><rect x="28" y="36" width="8" height="16" rx="1" fill="#b8b4a4"/><path d="M28 36 Q32 30 36 36" fill="#b8b4a4"/><line x1="12" y1="18" x2="10" y2="36" stroke="#9aad90" stroke-width="1.2"/><line x1="16" y1="16" x2="14" y2="38" stroke="#8a9d82" stroke-width="1"/><line x1="50" y1="16" x2="52" y2="38" stroke="#8a9d82" stroke-width="1"/></svg><h1>云扫墓</h1><div class="slogan">想念的时候，来看看。</div>
+    <div class="hero"><img src="/*HERO*/" alt=""><div class="fade"></div></div>
+    <div class="brand"><h1>云扫墓</h1><div class="slogan">想念的时候，来看看。</div>
       <p>一座仅家人可见的纪念墓。打开链接，就能和亲人一起献花、上香、鞠躬。</p><div class="muted">建议在家长陪同下使用。</div></div>
     <div class="actions">
-      <button class="btn" onclick="go('create')">为亲人建一座纪念墓</button>
+      <button class="btn gold" onclick="go('create')">为亲人建一座纪念墓</button>
       <button class="btn ghost" onclick="togglePanel('mine')">我的纪念墓</button>
       <button class="btn ghost" onclick="togglePanel('join')">通过邀请进入</button>
     </div>
@@ -159,13 +163,13 @@ textarea{min-height:88px;resize:none}
         <div class="field"><label class="label">墓志铭（选填，不超过 80 字）</label><textarea id="ep" maxlength="80"></textarea></div>
         <div class="opt-title">墓碑样式</div><div class="styles" id="styles"></div>
         <div class="err" id="c2err"></div>
-        <div class="two"><button class="btn ghost" onclick="showStep(1)">上一步</button><button class="btn grow" onclick="createTomb()">建立</button></div>
+        <div class="two"><button class="btn ghost" onclick="showStep(1)">上一步</button><button class="btn gold grow" onclick="createTomb()">建立</button></div>
       </div>
     </div>
   </section>
 
   <section id="tomb" class="screen">
-    <canvas id="scene"></canvas>
+    <canvas id="scene"></canvas><div class="vignette"></div><div class="gesture-tip" id="gtip">拖动环视 · 双指或滚轮缩放 · 在碑面上滑动擦拭</div>
     <div class="hud-top">
       <div class="hud-l"><button class="icon-btn" onclick="leaveTomb()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button><span class="presence-chip"><span id="online">1</span>&nbsp;位亲人在</span></div>
       <div class="hud-r"><button class="icon-btn" onclick="openSheet('settings')">景</button><button class="icon-btn" id="wxBtn" onclick="cycleWeather()">晴</button><button class="icon-btn" onclick="openSheet('invite')">邀</button><button class="icon-btn" id="admBtn" onclick="openSheet('message')">管<span class="badge-dot" id="badge" style="display:none"></span></button></div>
@@ -188,11 +192,12 @@ textarea{min-height:88px;resize:none}
   <div class="dlg" id="dlg"><div class="card">
     <h2>纪念墓已建好</h2>
     <div class="sub">请先把管理链接私下保存（密码本或文件），<span class="warn">不要发到家族群以外</span>。邀请家人请在墓前点「邀」转发。</div>
-    <button class="btn" onclick="closeDlg()">进入纪念墓</button>
+    <button class="btn gold" onclick="closeDlg()">进入纪念墓</button>
   </div></div>
   <div class="toast" id="toast"></div>
 </div>
 
+<script>/*THREE*/</script>
 <script>
 /*ENGINE*/
 </script>
@@ -247,7 +252,7 @@ let pendingOpen = null
 function closeDlg() { $('dlg').classList.remove('on'); openTomb(pendingOpen) }
 
 // ---------- 场景 ----------
-let cur = null, scene = null, raf = 0, sim = 0, hints = []
+let cur = null, scene = null, raf = 0, sim = 0, hints = [], is3D = false
 const SAMPLE = { id: 'sample', name: '奶奶', birth: '1931', death: '2019', epitaph: '一生勤俭，福泽儿孙', style: 'qingshi', offerings: [], ins: [{ id: 'i0', body: '奶奶，今年家里的桂花开得很好。', name: '小孙女', status: 'approved', at: Date.now() - 86400000 }], wipe: 0.3, sample: true }
 function enterSample() { cur = SAMPLE; startTomb() }
 function openTomb(id) { cur = tombs.find((t) => t.id === id); if (cur) startTomb() }
@@ -262,10 +267,22 @@ function startTomb() {
   $('wxBtn').textContent = { clear: '晴', cloudy: '阴', rain: '雨' }[env.weather]
   const c = $('scene'), r = c.getBoundingClientRect()
   const pr = Math.min(2, window.devicePixelRatio || 1)
-  c.width = r.width * pr; c.height = r.height * pr
-  const ctx = c.getContext('2d'); ctx.setTransform(pr, 0, 0, pr, 0, 0)
-  scene = new Scene(ctx, { seed: cur.id, onBowEnd: () => setBow(false), onQuality: () => { env.quality = 'smooth'; toast('已切换到流畅画质') } })
-  scene.resize(r.width, r.height)
+  const cb = { seed: cur.id, onBowEnd: () => setBow(false), onQuality: () => { env.quality = 'smooth'; toast('已切换到流畅画质') } }
+  if (scene && scene.dispose) scene.dispose()
+  try {
+    scene = new Memorial3D(THREE, c, Object.assign({ width: r.width, height: r.height, pixelRatio: pr }, cb))
+    is3D = true
+  } catch (e) {
+    // WebGL 不可用时退回 2D 画面
+    is3D = false
+    c.width = r.width * pr; c.height = r.height * pr
+    const ctx = c.getContext('2d'); ctx.setTransform(pr, 0, 0, pr, 0, 0)
+    scene = new Scene(ctx, cb)
+    scene.resize(r.width, r.height)
+    $('gtip').textContent = '在碑面上来回滑动，可以擦拭墓碑'
+  }
+  $('gtip').style.opacity = 1
+  setTimeout(() => { $('gtip').style.opacity = 0 }, 6500)
   scene.setTomb({ name: cur.name, dates: dates(cur), epitaph: cur.epitaph, style: cur.style })
   applyEnv(); refresh(); scene.setWipeLevel(cur.wipe || 0)
   updateBadge(); $('online').textContent = 1; scene.setPeers([])
@@ -305,9 +322,25 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && sce
 let wiping = false
 const cv = $('scene')
 function pt(e) { const r = cv.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top } }
-function down(e) { const p = pt(e); wiping = scene && scene.isOnStele(p.x, p.y); if (wiping) { showWipe(); e.preventDefault() } }
-function move(e) { if (!wiping) return; const p = pt(e); scene.wipeAt(p.x, p.y); showWipe(); e.preventDefault() }
-function up() { wiping = false; if (scene) flushWipe() }
+let lastPt = null, pinch = 0
+function tdist(e) { const a = e.touches[0], b = e.touches[1]; return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) }
+function down(e) {
+  if (!scene) return
+  $('gtip').style.opacity = 0
+  if (e.touches && e.touches.length >= 2 && is3D) { wiping = false; pinch = tdist(e); e.preventDefault(); return }
+  const p = pt(e); wiping = scene.isOnStele(p.x, p.y); lastPt = p
+  if (wiping) showWipe()
+  e.preventDefault()
+}
+function move(e) {
+  if (!scene) return
+  if (e.touches && e.touches.length >= 2 && is3D) { const d = tdist(e); if (pinch) scene.zoomBy(pinch / Math.max(1, d)); pinch = d; e.preventDefault(); return }
+  const p = pt(e)
+  if (wiping) { scene.wipeAt(p.x, p.y); showWipe() } else if (is3D && lastPt) { scene.dragBy(p.x - lastPt.x, p.y - lastPt.y); lastPt = p }
+  e.preventDefault()
+}
+function up() { wiping = false; lastPt = null; pinch = 0; if (scene) flushWipe() }
+cv.addEventListener('wheel', (e) => { if (is3D && scene) { scene.zoomBy(1 + e.deltaY * 0.0012); e.preventDefault() } }, { passive: false })
 cv.addEventListener('touchstart', down, { passive: false }); cv.addEventListener('touchmove', move, { passive: false }); cv.addEventListener('touchend', up)
 cv.addEventListener('mousedown', down); cv.addEventListener('mousemove', (e) => { if (e.buttons) move(e) }); window.addEventListener('mouseup', up)
 
@@ -378,7 +411,12 @@ function renderSettings() {
 }
 function setEnv(k, v) { env[k] = v; applyEnv(); renderSettings() }
 
-window.addEventListener('resize', () => { if ($('tomb').classList.contains('on') && scene) { const c = $('scene'), r = c.getBoundingClientRect(), pr = Math.min(2, window.devicePixelRatio || 1); c.width = r.width * pr; c.height = r.height * pr; c.getContext('2d').setTransform(pr, 0, 0, pr, 0, 0); scene.resize(r.width, r.height); scene.setWipeLevel(cur.wipe || 0) } })
+window.addEventListener('resize', () => {
+  if (!$('tomb').classList.contains('on') || !scene) return
+  const c = $('scene'), r = c.getBoundingClientRect(), pr = Math.min(2, window.devicePixelRatio || 1)
+  if (is3D) { scene.resize(r.width, r.height, pr); return }
+  c.width = r.width * pr; c.height = r.height * pr; c.getContext('2d').setTransform(pr, 0, 0, pr, 0, 0); scene.resize(r.width, r.height); scene.setWipeLevel(cur.wipe || 0)
+})
 ;['phone', 'tomb'].forEach((id) => $(id).addEventListener('scroll', (e) => { e.target.scrollTop = 0 }))
 renderHome()
 </script>

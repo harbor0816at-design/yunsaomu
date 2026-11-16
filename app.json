@@ -6,11 +6,11 @@
     "pages/legal/legal"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#cfd4c6",
-    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#24251f",
+    "navigationBarTextStyle": "white",
     "navigationBarTitleText": "云扫墓",
-    "backgroundColor": "#d5d8cc",
-    "backgroundTextStyle": "dark"
+    "backgroundColor": "#24251f",
+    "backgroundTextStyle": "light"
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json",

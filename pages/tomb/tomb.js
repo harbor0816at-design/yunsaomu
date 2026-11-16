@@ -5,6 +5,7 @@ const envu = require('../../utils/env')
 const Hints = require('../../utils/hints')
 const Realtime = require('../../utils/realtime')
 const Scene = require('../../scene/engine')
+const Memorial3D = require('../../scene3d/memorial3d')
 const config = require('../../config')
 
 const FLOWERS = [
@@ -54,6 +55,8 @@ Page({
     canShare: false,
     seasonLabel: '', phaseLabel: '', weatherChar: '晴',
     sheetTitle: '',
+    mode: '3d', // 3d | 2d（WebGL 不可用时退回 2D 画面）
+    gestureTip: true,
     wipeShow: false, wipePct: 0
   },
 
@@ -126,21 +129,76 @@ Page({
   },
 
   // ---------- 画布 ----------
+  pixelRatio() {
+    let pr = 2
+    try { pr = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio || 2 } catch (e) { /* */ }
+    return pr
+  },
+
   initCanvas() {
     if (this.scene) return
+    if (this.data.mode === '3d') this.init3D()
+    else this.init2D()
+    setTimeout(() => this.setData({ gestureTip: false }), 6500)
+  },
+
+  init3D() {
+    wx.nextTick(() => {
+      wx.createSelectorQuery().in(this).select('#scene3d').fields({ node: true, size: true }).exec((res) => {
+        const r = res && res[0]
+        if (!r || !r.node) { this.fallback2D(); return }
+        try {
+          const { createScopedThreejs } = require('../../libs/threejs-miniprogram')
+          const canvas = r.node
+          const THREE = createScopedThreejs(canvas)
+          this.canvas = canvas
+          this.cssW = r.width
+          this.cssH = r.height
+          this.basePr = this.pixelRatio()
+          this.is3D = true
+          this.scene = new Memorial3D(THREE, canvas, {
+            width: r.width,
+            height: r.height,
+            pixelRatio: this.data.env.quality === 'smooth' ? 1 : Math.min(2, this.basePr),
+            seed: this.tombId,
+            createCanvas: (w, h) => wx.createOffscreenCanvas({ type: '2d', width: w, height: h }),
+            onBowEnd: () => this.setData({ bowing: false }),
+            onQuality: (q) => {
+              this.setData({ 'env.quality': q })
+              this.applyPixelRatio()
+              wx.showToast({ title: '已切换到流畅画质', icon: 'none' })
+            }
+          })
+          this.ctxReady = true
+          this.pushScene()
+          this.loop()
+        } catch (e) {
+          console.error('3D 初始化失败，改用 2D', e)
+          this.fallback2D()
+        }
+      })
+    })
+  },
+
+  fallback2D() {
+    this.is3D = false
+    this.scene = null
+    this.canvas = null
+    this.setData({ mode: '2d' }, () => this.init2D())
+  },
+
+  init2D() {
     wx.nextTick(() => {
       wx.createSelectorQuery().in(this).select('#scene').fields({ node: true, size: true }).exec((res) => {
         const r = res && res[0]
         if (!r || !r.node) return
         const canvas = r.node
         const ctx = canvas.getContext('2d')
-        let pr = 2
-        try { pr = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio || 2 } catch (e) { /* */ }
         this.canvas = canvas
         this.ctx = ctx
         this.cssW = r.width
         this.cssH = r.height
-        this.basePr = pr
+        this.basePr = this.pixelRatio()
         this.scene = new Scene(ctx, {
           seed: this.tombId,
           onBowEnd: () => this.setData({ bowing: false }),
@@ -159,8 +217,9 @@ Page({
   },
 
   applyPixelRatio() {
-    if (!this.canvas) return
+    if (!this.canvas || !this.scene) return
     const pr = this.data.env.quality === 'smooth' ? 1 : Math.min(2, this.basePr)
+    if (this.is3D) { this.scene.resize(this.cssW, this.cssH, pr); return }
     this.canvas.width = Math.round(this.cssW * pr)
     this.canvas.height = Math.round(this.cssH * pr)
     this.ctx.setTransform(1, 0, 0, 1, 0, 0)
@@ -269,17 +328,39 @@ Page({
 
   // ---------- 擦碑 ----------
   onTouchStart(e) {
-    const t = e.touches[0]
-    if (!this.scene || !t) return
+    const ts = e.touches || []
+    if (!this.scene || !ts.length) return
+    if (ts.length >= 2 && this.is3D) {
+      this.wiping = false
+      this.pinch = Math.hypot(ts[0].x - ts[1].x, ts[0].y - ts[1].y)
+      return
+    }
+    const t = ts[0]
     this.wiping = this.scene.isOnStele(t.x, t.y)
+    this.lastTouch = { x: t.x, y: t.y }
     if (this.wiping) this.showWipe()
+    if (this.data.gestureTip) this.setData({ gestureTip: false })
   },
   onTouchMove(e) {
-    const t = e.touches[0]
-    if (!this.wiping || !t) return
-    this.scene.wipeAt(t.x, t.y)
-    const pct = Math.round((1 - this.scene.dustAmount()) * 100)
-    if (pct !== this.data.wipePct) this.setData({ wipePct: pct })
+    const ts = e.touches || []
+    if (!this.scene || !ts.length) return
+    if (ts.length >= 2 && this.is3D) {
+      const d = Math.hypot(ts[0].x - ts[1].x, ts[0].y - ts[1].y)
+      if (this.pinch) this.scene.zoomBy(this.pinch / Math.max(1, d))
+      this.pinch = d
+      return
+    }
+    const t = ts[0]
+    if (this.wiping) {
+      this.scene.wipeAt(t.x, t.y)
+      const pct = Math.round((1 - this.scene.dustAmount()) * 100)
+      if (pct !== this.data.wipePct) this.setData({ wipePct: pct })
+      return
+    }
+    if (this.is3D && this.lastTouch) {
+      this.scene.dragBy(t.x - this.lastTouch.x, t.y - this.lastTouch.y)
+      this.lastTouch = { x: t.x, y: t.y }
+    }
   },
   showWipe() {
     clearTimeout(this.wipeHide)
@@ -287,9 +368,11 @@ Page({
     if (this.scene) this.setData({ wipePct: Math.round((1 - this.scene.dustAmount()) * 100) })
     this.wipeHide = setTimeout(() => this.setData({ wipeShow: false }), 2600)
   },
-  onTouchEnd() {
+  onTouchEnd(e) {
     if (this.wiping) this.showWipe()
     this.wiping = false
+    this.pinch = 0
+    this.lastTouch = null
     this.flushWipe()
   },
   flushWipe() {

@@ -1,6 +1,6 @@
 <view class="page-bg wrap">
+  <view class="hero"><image src="/assets/hero.jpg" mode="aspectFill" /><view class="fade"></view></view>
   <view class="brand">
-    <image class="mark" src="/assets/brand.png" mode="aspectFit" />
     <view class="h1">云扫墓</view>
     <view class="slogan">{{slogan}}</view>
     <view class="desc">一座仅家人可见的纪念墓。打开链接，就能和亲人一起献花、上香、鞠躬。</view>
@@ -8,7 +8,7 @@
   </view>
 
   <view class="actions">
-    <button class="btn" hover-class="hover" bindtap="goCreate">为亲人建一座纪念墓</button>
+    <button class="btn gold" hover-class="hover" bindtap="goCreate">为亲人建一座纪念墓</button>
     <button class="btn ghost" hover-class="hover" bindtap="toggleMine">我的纪念墓</button>
     <button class="btn ghost" hover-class="hover" bindtap="toggleJoin">通过邀请进入</button>
   </view>

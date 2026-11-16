@@ -1,10 +1,13 @@
 <view class="tomb-root">
-  <canvas type="2d" id="scene" class="scene"
+  <canvas wx:if="{{mode === '3d'}}" type="webgl" id="scene3d" class="scene"
     bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></canvas>
+  <canvas wx:if="{{mode === '2d'}}" type="2d" id="scene" class="scene"
+    bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></canvas>
+  <view class="vignette"></view>
 
   <!-- 顶栏：返回 + 在场人数（右侧让出胶囊按钮） -->
   <view class="hud-top" style="top: {{navTop}}px; height: {{navH}}px;" wx:if="{{status === 'ready'}}">
-    <view class="icon-btn" bindtap="goBack"><image class="ico" src="/assets/icons/back-ink.png" /></view>
+    <view class="icon-btn" bindtap="goBack"><image class="ico" src="/assets/icons/back.png" /></view>
     <view class="presence-chip">{{online}} 位亲人在<text class="live {{live ? 'on' : ''}}"></text></view>
   </view>
 
@@ -28,8 +31,11 @@
 
   <!-- 右下侧栏：留言 -->
   <view class="side-actions" wx:if="{{status === 'ready'}}">
-    <view class="side-btn" bindtap="openMessages"><image class="ico" src="/assets/icons/message-ink.png" />留言</view>
+    <view class="side-btn" bindtap="openMessages"><image class="ico" src="/assets/icons/message.png" />留言</view>
   </view>
+
+  <!-- 操作提示（进入后约 6 秒） -->
+  <view class="gesture-tip {{gestureTip ? 'show' : ''}}" wx:if="{{status === 'ready'}}">{{mode === '3d' ? '拖动环视 · 双指缩放 · 在碑面上滑动擦拭' : '在碑面上来回滑动，可以擦拭墓碑'}}</view>
 
   <!-- 擦碑进度 -->
   <view class="wipe-panel {{wipeShow ? 'show' : ''}}" wx:if="{{status === 'ready'}}">
@@ -124,7 +130,7 @@
 
     <view wx:if="{{sheet === 'invite'}}">
       <view class="sub">只有收到邀请的人能进入这座墓。请只把它转发给家人。</view>
-      <button class="btn share" hover-class="hover" open-type="share">转发给微信好友或群</button>
+      <button class="btn gold share" hover-class="hover" open-type="share">转发给微信好友或群</button>
       <button class="btn ghost" hover-class="hover" bindtap="copyWebLink">复制网页链接</button>
     </view>
   </view>

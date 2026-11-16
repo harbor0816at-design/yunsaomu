@@ -75,7 +75,7 @@
       <view wx:if="{{err}}" class="err">{{err}}</view>
       <view class="actions">
         <button class="btn ghost" hover-class="hover" bindtap="back">上一步</button>
-        <button class="btn grow" hover-class="hover" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">建立</button>
+        <button class="btn gold grow" hover-class="hover" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">建立</button>
       </view>
     </view>
   </view>
@@ -86,7 +86,7 @@
       <view class="h2">纪念墓已建好</view>
       <view class="sub">管理权限已保存在这台手机上。请再把管理链接私下保存一份（密码本或文件），<text class="warn">不要发到家族群以外</text>。邀请家人请在墓前点「邀」转发。</view>
       <button class="btn ghost" hover-class="hover" bindtap="copyAdmin">复制管理链接</button>
-      <button class="btn" hover-class="hover" bindtap="enterTomb">进入纪念墓</button>
+      <button class="btn gold" hover-class="hover" bindtap="enterTomb">进入纪念墓</button>
     </view>
   </view>
 </view>
