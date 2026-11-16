@@ -1,3 +1,4 @@
+// 侧面渲染鞠躬四个阶段：node test/render-bow.js <输出目录>
 const fs = require('fs'), path = require('path'); const { chromium } = require('playwright')
 const root = require('path').join(__dirname, '..'); const src = (p) => fs.readFileSync(path.join(root, p), 'utf8')
 const bundle = `const __mods = {};function __def(n, fn){ __mods[n] = { fn, exports: null } }
@@ -23,7 +24,7 @@ window.Memorial3D = require('memorial3d');`
   for (const [name, at] of shots) {
     await p.evaluate((dt) => { const s = window.__s; let t = window.__t; const n = Math.round(dt / 0.05); for (let i = 0; i < n; i++) { t += 50; s.render(t) } window.__t = t }, at + 0.35 - last)
     last = at + 0.35
-    await p.locator('#c').screenshot({ path: `' + (process.argv[2] || '/tmp') + '/bow-${name}.png` })
+    await p.locator('#c').screenshot({ path: `${process.argv[2] || '/tmp'}/bow-${name}.png` })
   }
   await b.close()
 })()
