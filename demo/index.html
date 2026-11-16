@@ -3686,7 +3686,7 @@ function startTomb() {
   cancelAnimationFrame(raf)
   const loop = () => { scene.render(Date.now()); raf = requestAnimationFrame(loop) }
   loop()
-  clearInterval(sim); sim = setInterval(simulate, 9000); setTimeout(simulate, 4000)
+  clearInterval(sim) // 演示不再自动模拟亲友来访
   simState = 0
 }
 const SEASON_LABEL = { spring: '春日花开', summer: '夏日林荫', autumn: '秋日落叶', winter: '冬日飘雪' }
