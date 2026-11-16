@@ -57,6 +57,7 @@ Page({
     sheetTitle: '',
     mode: '3d', // 3d | 2d（WebGL 不可用时退回 2D 画面）
     gestureTip: true,
+    joyOn: false, joyX: 0, joyY: 0,
     wipeShow: false, wipePct: 0
   },
 
@@ -340,6 +341,37 @@ Page({
   },
 
   // ---------- 擦碑 ----------
+  // 虚拟摇杆：控制自己走动
+  onJoyStart(e) {
+    const q = this.createSelectorQuery ? this.createSelectorQuery() : wx.createSelectorQuery()
+    q.select('.joy').boundingClientRect((r) => {
+      if (!r) return
+      this.joyRect = r
+      if (this.joyPending) this.joyApply(this.joyPending)
+    }).exec()
+    this.joyPending = e.touches[0]
+    if (this.data.gestureTip) this.setData({ gestureTip: false })
+    this.setData({ joyOn: true })
+    if (this.joyRect) this.joyApply(e.touches[0])
+  },
+  onJoyMove(e) {
+    const t = e.touches[0]; this.joyPending = t
+    if (this.joyRect) this.joyApply(t)
+  },
+  joyApply(t) {
+    const r = this.joyRect, R = r.width / 2
+    let dx = (t.clientX - (r.left + R)) / (R * 0.8), dy = (t.clientY - (r.top + R)) / (R * 0.8)
+    const m = Math.sqrt(dx * dx + dy * dy); if (m > 1) { dx /= m; dy /= m }
+    if (this.scene && this.scene.setMoveInput) this.scene.setMoveInput(dx, dy)
+    const now = Date.now()
+    if (!this.joyDrawAt || now - this.joyDrawAt > 33) { this.joyDrawAt = now; this.setData({ joyX: Math.round(dx * R * 0.6), joyY: Math.round(dy * R * 0.6) }) }
+  },
+  onJoyEnd() {
+    this.joyPending = null
+    if (this.scene && this.scene.setMoveInput) this.scene.setMoveInput(0, 0)
+    this.setData({ joyOn: false, joyX: 0, joyY: 0 })
+  },
+
   onTouchStart(e) {
     const ts = e.touches || []
     if (!this.scene || !ts.length) return

@@ -80,15 +80,21 @@ textarea{min-height:84px;resize:none}
 .badge-dot{position:absolute;right:-3px;top:-3px;min-width:16px;height:16px;border-radius:8px;background:#b4463c;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 3px}
 .action-toast{position:absolute;left:50%;top:150px;transform:translateX(-50%);z-index:25;background:rgba(20,21,17,.82);border:1px solid rgba(255,253,243,.12);color:var(--ink);font-size:13px;padding:8px 16px;border-radius:999px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .3s}
 .action-toast.show{opacity:1}
-.gesture-tip{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);z-index:4;font-size:12px;color:var(--ink-soft);background:rgba(20,21,17,.6);padding:5px 13px;border-radius:999px;white-space:nowrap;pointer-events:none;transition:opacity .6s}
+.gesture-tip{position:absolute;left:50%;bottom:226px;transform:translateX(-50%);z-index:4;font-size:12px;color:var(--ink-soft);background:rgba(20,21,17,.6);padding:5px 13px;border-radius:999px;white-space:nowrap;pointer-events:none;transition:opacity .6s}
 .side-actions{position:absolute;right:10px;bottom:92px;z-index:5;display:flex;flex-direction:column;gap:8px}
 .side-btn{width:58px;min-height:54px;border:1px solid rgba(255,253,243,.14);border-radius:11px;background:rgba(30,31,26,.72);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;padding:0}
 .side-btn svg{width:21px;height:21px}
-.wipe-panel{position:absolute;left:50%;transform:translateX(-50%);bottom:92px;width:min(250px,calc(100% - 96px));z-index:6;background:rgba(30,31,26,.88);border:1px solid rgba(255,253,243,.14);border-radius:11px;padding:10px 12px;font-size:12px;color:var(--ink-soft);opacity:0;transition:opacity .3s;pointer-events:none}
+.wipe-panel{position:absolute;left:50%;transform:translateX(-50%);bottom:226px;width:min(250px,calc(100% - 96px));z-index:6;background:rgba(30,31,26,.88);border:1px solid rgba(255,253,243,.14);border-radius:11px;padding:10px 12px;font-size:12px;color:var(--ink-soft);opacity:0;transition:opacity .3s;pointer-events:none}
 .wipe-panel.show{opacity:1}
 .wipe-panel strong{color:var(--ink);font-size:14px;font-weight:600}
 .wipe-panel .r{display:flex;justify-content:space-between;align-items:center}
 .wipe-bar{height:5px;border-radius:5px;background:rgba(255,253,243,.14);margin-top:6px;overflow:hidden}.wipe-bar i{display:block;height:100%;background:var(--gold);width:0;transition:width .2s}
+.joy{position:absolute;left:18px;bottom:96px;width:116px;height:116px;border-radius:50%;z-index:6;touch-action:none;
+  background:radial-gradient(circle,rgba(30,31,26,.35) 0%,rgba(30,31,26,.6) 70%);border:1px solid rgba(255,253,243,.18)}
+.joy::after{content:'';position:absolute;inset:34%;border-radius:50%;border:1px dashed rgba(255,253,243,.12)}
+.joy .knob{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;
+  background:rgba(255,253,243,.86);box-shadow:0 2px 10px rgba(0,0,0,.35);transition:transform .12s ease-out}
+.joy.on .knob{transition:none;background:var(--gold)}
 .ritual-bar{position:absolute;left:0;right:0;bottom:0;padding:9px 6px 10px;display:flex;justify-content:space-around;gap:2px;background:linear-gradient(180deg,rgba(27,28,23,0),rgba(27,28,23,.6) 22%,rgba(27,28,23,.94));z-index:5}
 .ritual-btn{flex:1;min-width:0;min-height:56px;border:0;background:transparent;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;letter-spacing:.04em;padding:0}
 .ritual-btn svg{width:24px;height:24px}
@@ -169,13 +175,14 @@ textarea{min-height:84px;resize:none}
   </section>
 
   <section id="tomb" class="screen">
-    <canvas id="scene"></canvas><div class="vignette"></div><div class="gesture-tip" id="gtip">轻点地面走过去 · 拖动环视 · 在碑面上滑动擦拭</div>
+    <canvas id="scene"></canvas><div class="vignette"></div><div class="gesture-tip" id="gtip">左下摇杆走动 · 拖动环视 · 在碑面上滑动擦拭</div>
     <div class="hud-top">
       <div class="hud-l"><button class="icon-btn" onclick="leaveTomb()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button><span class="presence-chip"><span id="online">1</span>&nbsp;位亲人在</span></div>
       <div class="hud-r"><button class="icon-btn" onclick="openSheet('settings')">景</button><button class="icon-btn" id="wxBtn" onclick="cycleWeather()">晴</button><button class="icon-btn" onclick="openSheet('invite')">邀</button><button class="icon-btn" id="admBtn" onclick="openSheet('message')">管<span class="badge-dot" id="badge" style="display:none"></span></button></div>
     </div>
     <div class="tomb-title"><span class="name-chip strong" id="tname"></span><span class="season-chip" id="tseason"></span><span class="name-chip">我是：来访的亲人</span></div>
     <div class="action-toast" id="hint"></div>
+    <div class="joy" id="joy"><div class="knob" id="knob"></div></div>
     <div class="side-actions"><button class="side-btn" onclick="openSheet('message')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5h14v10H11l-4 3.5v-3.5H5z"/><path d="M8.5 9.5h7M8.5 12.5h4.5"/></svg>留言</button></div>
     <div class="wipe-panel" id="wipePanel"><div class="r"><strong id="wipeTitle">擦拭墓碑</strong><span id="wipePct">0%</span></div><div class="wipe-bar"><i id="wipeFill"></i></div><div style="margin-top:4px;font-size:11px;color:var(--stone)">在碑面上来回滑动，或点「擦碑」擦一遍</div></div>
     <div class="ritual-bar">
@@ -3214,6 +3221,16 @@ class Memorial3D {
     return true
   }
 
+  // 摇杆 / 键盘输入：dx 右为正，dy 下为正（-1..1），方向相对当前镜头
+  setMoveInput(dx, dy) {
+    const m = Math.min(1, Math.sqrt(dx * dx + dy * dy))
+    this.moveInput = m > 0.12 ? { dx, dy, m } : null
+    if (this.moveInput) {
+      this.me.target = null
+      if (this.me.bow) this.stopBow()
+    }
+  }
+
   walkTo(x, z) {
     const t = this.clampWalk(x, z)
     this.me.target = t
@@ -3376,7 +3393,27 @@ class Memorial3D {
     const u = st.g.userData
     // 行走
     let moving = false
-    if (st.target && !st.bow) {
+    const inp = st === this.me ? this.moveInput : null
+    if (inp && !st.bow) {
+      // 方向相对镜头：上 = 朝镜头看的方向
+      const fx = -Math.sin(this.yaw)
+      const fz = -Math.cos(this.yaw)
+      const rx = Math.cos(this.yaw)
+      const rz = -Math.sin(this.yaw)
+      let vx = rx * inp.dx + fx * -inp.dy
+      let vz = rz * inp.dx + fz * -inp.dy
+      const vl = Math.sqrt(vx * vx + vz * vz) || 1
+      vx /= vl; vz /= vl
+      st.ryGoal = Math.atan2(vx, vz)
+      const want = WALK_SPEED * (0.35 + 0.85 * inp.m)
+      st.speed += (want - st.speed) * Math.min(1, sec * 6)
+      const facing = Math.cos(angleDiff(st.ry, st.ryGoal))
+      const step = st.speed * sec * Math.max(0.2, facing)
+      const c = this.clampWalk(st.x + vx * step, st.z + vz * step)
+      moving = Math.abs(c.x - st.x) + Math.abs(c.z - st.z) > 1e-4
+      st.x = c.x
+      st.z = c.z
+    } else if (st.target && !st.bow) {
       const dx = st.target.x - st.x
       const dz = st.target.z - st.z
       const d = Math.sqrt(dx * dx + dz * dz)
@@ -3640,6 +3677,7 @@ function startTomb() {
     scene.resize(r.width, r.height)
     $('gtip').textContent = '在碑面上来回滑动，可以擦拭墓碑'
   }
+  $('joy').style.display = is3D ? '' : 'none'
   $('gtip').style.opacity = 1
   setTimeout(() => { $('gtip').style.opacity = 0 }, 6500)
   scene.setTomb({ name: cur.name, dates: dates(cur), epitaph: cur.epitaph, style: cur.style })
@@ -3707,6 +3745,34 @@ function up() {
   if (tapC && is3D && Date.now() - tapC.at < 350 && scene.tap) { if (scene.tap(tapC.x, tapC.y)) setBow(false) }
   tapC = null; wiping = false; lastPt = null; pinch = 0; if (scene) flushWipe()
 }
+// 虚拟摇杆
+const joy = $('joy'), knob = $('knob')
+let joyId = null
+function joyMove(cx, cy) {
+  const r = joy.getBoundingClientRect(), R = r.width / 2
+  let dx = (cx - (r.left + R)) / (R - 12), dy = (cy - (r.top + R)) / (R - 12)
+  const m = Math.hypot(dx, dy); if (m > 1) { dx /= m; dy /= m }
+  knob.style.transform = `translate(${dx * (R - 20)}px, ${dy * (R - 20)}px)`
+  if (scene && scene.setMoveInput) scene.setMoveInput(dx, dy)
+}
+function joyEnd() { joyId = null; joy.classList.remove('on'); knob.style.transform = ''; if (scene && scene.setMoveInput) scene.setMoveInput(0, 0) }
+joy.addEventListener('touchstart', (e) => { const t = e.changedTouches[0]; joyId = t.identifier; joy.classList.add('on'); $('gtip').style.opacity = 0; joyMove(t.clientX, t.clientY); e.preventDefault(); e.stopPropagation() }, { passive: false })
+joy.addEventListener('touchmove', (e) => { for (const t of e.changedTouches) if (t.identifier === joyId) joyMove(t.clientX, t.clientY); e.preventDefault(); e.stopPropagation() }, { passive: false })
+joy.addEventListener('touchend', (e) => { joyEnd(); e.preventDefault() })
+joy.addEventListener('touchcancel', joyEnd)
+joy.addEventListener('mousedown', (e) => { joyId = 'm'; joy.classList.add('on'); joyMove(e.clientX, e.clientY); e.preventDefault(); e.stopPropagation() })
+window.addEventListener('mousemove', (e) => { if (joyId === 'm') joyMove(e.clientX, e.clientY) })
+window.addEventListener('mouseup', () => { if (joyId === 'm') joyEnd() })
+// 键盘：WASD / 方向键
+const keys = {}
+function keyInput() {
+  if (!scene || !scene.setMoveInput || !$('tomb').classList.contains('on')) return
+  const dx = (keys.ArrowRight || keys.d ? 1 : 0) - (keys.ArrowLeft || keys.a ? 1 : 0)
+  const dy = (keys.ArrowDown || keys.s ? 1 : 0) - (keys.ArrowUp || keys.w ? 1 : 0)
+  scene.setMoveInput(dx, dy)
+}
+window.addEventListener('keydown', (e) => { const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (['w','a','s','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k) && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'INPUT') { keys[k] = true; keyInput(); e.preventDefault() } })
+window.addEventListener('keyup', (e) => { const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (keys[k]) { keys[k] = false; keyInput() } })
 cv.addEventListener('wheel', (e) => { if (is3D && scene) { scene.zoomBy(1 + e.deltaY * 0.0012); e.preventDefault() } }, { passive: false })
 cv.addEventListener('touchstart', down, { passive: false }); cv.addEventListener('touchmove', move, { passive: false }); cv.addEventListener('touchend', up)
 cv.addEventListener('mousedown', down); cv.addEventListener('mousemove', (e) => { if (e.buttons) move(e) }); window.addEventListener('mouseup', (e) => { if (lastPt || wiping) up() })

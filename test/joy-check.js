@@ -1,0 +1,27 @@
+const { chromium } = require('playwright')
+;(async () => {
+  const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] })
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })
+  const p = await ctx.newPage(); const errs = []
+  p.on('pageerror', e => errs.push(e.message))
+  await p.goto('file:///home/claude/yunsaomu/demo/index.html')
+  await p.evaluate(() => enterSample()); await p.waitForTimeout(2500)
+  const before = await p.evaluate(() => ({ x: scene.me.x, z: scene.me.z }))
+  const r = await p.$eval('#joy', el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2, w: r.width } })
+  // 摇杆向上推（前进）
+  const cdp = await ctx.newCDPSession(p)
+  const tp = (type, x, y) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y, id: 1 }] })
+  await tp('touchStart', r.x, r.y); await tp('touchMove', r.x, r.y - 40)
+  await p.waitForTimeout(1500)
+  const mid = await p.evaluate(() => ({ x: scene.me.x, z: scene.me.z, inp: !!scene.moveInput }))
+  await p.screenshot({ path: '/tmp/joy-push.png' })
+  await tp('touchMove', r.x + 45, r.y); await p.waitForTimeout(1000)
+  const right = await p.evaluate(() => ({ x: scene.me.x, z: scene.me.z }))
+  await tp('touchEnd'); await p.waitForTimeout(400)
+  const after = await p.evaluate(() => ({ inp: scene.moveInput, x: scene.me.x }))
+  // 键盘
+  await p.keyboard.down('ArrowDown'); await p.waitForTimeout(800); await p.keyboard.up('ArrowDown')
+  const key = await p.evaluate(() => ({ z: scene.me.z, inp: scene.moveInput }))
+  console.log(JSON.stringify({ before, mid, right, after, key, errs }))
+  await b.close()
+})()

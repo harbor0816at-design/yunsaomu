@@ -1024,6 +1024,16 @@ class Memorial3D {
     return true
   }
 
+  // 摇杆 / 键盘输入：dx 右为正，dy 下为正（-1..1），方向相对当前镜头
+  setMoveInput(dx, dy) {
+    const m = Math.min(1, Math.sqrt(dx * dx + dy * dy))
+    this.moveInput = m > 0.12 ? { dx, dy, m } : null
+    if (this.moveInput) {
+      this.me.target = null
+      if (this.me.bow) this.stopBow()
+    }
+  }
+
   walkTo(x, z) {
     const t = this.clampWalk(x, z)
     this.me.target = t
@@ -1186,7 +1196,27 @@ class Memorial3D {
     const u = st.g.userData
     // 行走
     let moving = false
-    if (st.target && !st.bow) {
+    const inp = st === this.me ? this.moveInput : null
+    if (inp && !st.bow) {
+      // 方向相对镜头：上 = 朝镜头看的方向
+      const fx = -Math.sin(this.yaw)
+      const fz = -Math.cos(this.yaw)
+      const rx = Math.cos(this.yaw)
+      const rz = -Math.sin(this.yaw)
+      let vx = rx * inp.dx + fx * -inp.dy
+      let vz = rz * inp.dx + fz * -inp.dy
+      const vl = Math.sqrt(vx * vx + vz * vz) || 1
+      vx /= vl; vz /= vl
+      st.ryGoal = Math.atan2(vx, vz)
+      const want = WALK_SPEED * (0.35 + 0.85 * inp.m)
+      st.speed += (want - st.speed) * Math.min(1, sec * 6)
+      const facing = Math.cos(angleDiff(st.ry, st.ryGoal))
+      const step = st.speed * sec * Math.max(0.2, facing)
+      const c = this.clampWalk(st.x + vx * step, st.z + vz * step)
+      moving = Math.abs(c.x - st.x) + Math.abs(c.z - st.z) > 1e-4
+      st.x = c.x
+      st.z = c.z
+    } else if (st.target && !st.bow) {
       const dx = st.target.x - st.x
       const dz = st.target.z - st.z
       const d = Math.sqrt(dx * dx + dz * dz)

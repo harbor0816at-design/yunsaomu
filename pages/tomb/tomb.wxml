@@ -30,12 +30,15 @@
   <view class="action-toast {{hintOn ? 'show' : ''}}" style="top: {{navTop + navH + 96}}px;">{{hint}}</view>
 
   <!-- 右下侧栏：留言 -->
+  <view class="joy {{joyOn ? 'on' : ''}}" wx:if="{{status === 'ready' && mode === '3d'}}" catchtouchstart="onJoyStart" catchtouchmove="onJoyMove" catchtouchend="onJoyEnd" catchtouchcancel="onJoyEnd">
+    <view class="knob" style="transform: translate({{joyX}}px, {{joyY}}px)"></view>
+  </view>
   <view class="side-actions" wx:if="{{status === 'ready'}}">
     <view class="side-btn" bindtap="openMessages"><image class="ico" src="/assets/icons/message.png" />留言</view>
   </view>
 
   <!-- 操作提示（进入后约 6 秒） -->
-  <view class="gesture-tip {{gestureTip ? 'show' : ''}}" wx:if="{{status === 'ready'}}">{{mode === '3d' ? '轻点地面走过去 · 拖动环视 · 在碑面上滑动擦拭' : '在碑面上来回滑动，可以擦拭墓碑'}}</view>
+  <view class="gesture-tip {{gestureTip ? 'show' : ''}}" wx:if="{{status === 'ready'}}">{{mode === '3d' ? '左下摇杆走动 · 拖动环视 · 在碑面上滑动擦拭' : '在碑面上来回滑动，可以擦拭墓碑'}}</view>
 
   <!-- 擦碑进度 -->
   <view class="wipe-panel {{wipeShow ? 'show' : ''}}" wx:if="{{status === 'ready'}}">
