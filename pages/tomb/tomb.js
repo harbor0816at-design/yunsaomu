@@ -13,6 +13,10 @@ const FLOWERS = [
   { id: 'cuibai', name: '翠柏' }
 ]
 const K_ENV = 'ysm.env'
+const SEASON_LABEL = { spring: '春日花开', summer: '夏日林荫', autumn: '秋日落叶', winter: '冬日飘雪' }
+const PHASE_LABEL = { dawn: '晨', noon: '午', dusk: '黄昏', night: '夜' }
+const WEATHER_CHAR = { clear: '晴', cloudy: '阴', rain: '雨' }
+const SHEET_TITLE = { flower: '献一束花', message: '留言', settings: '景 · 场景与我', invite: '邀请家人' }
 
 function datesLabel(t) {
   const b = t.birthDate ? v.formatDate(t.birthDate, t.birthPrecision) : (t.birthYear ? String(t.birthYear) : '')
@@ -48,7 +52,9 @@ Page({
     draft: '',
     posting: false,
     canShare: false,
-    wipeTip: true
+    seasonLabel: '', phaseLabel: '', weatherChar: '晴',
+    sheetTitle: '',
+    wipeShow: false, wipePct: 0
   },
 
   onLoad(q) {
@@ -180,11 +186,14 @@ Page({
   pushScene() {
     if (!this.scene) return
     const e = this.data.env
+    const season = envu.resolveSeason(this.seasonMode, e.season || null)
+    const phase = envu.resolvePhase(e.tod)
+    this.setData({ seasonLabel: SEASON_LABEL[season], phaseLabel: PHASE_LABEL[phase], weatherChar: WEATHER_CHAR[e.weather] || '晴' })
     this.scene.setTomb(this.tombLabel || {})
     this.scene.setTiming({ serverOffset: this.serverOffset || 0, incenseMs: 120000, candleMs: 600000 })
     this.scene.setEnv({
-      season: envu.resolveSeason(this.seasonMode, e.season || null),
-      phase: envu.resolvePhase(e.tod),
+      season,
+      phase,
       weather: e.weather,
       quality: e.quality
     })
@@ -263,14 +272,23 @@ Page({
     const t = e.touches[0]
     if (!this.scene || !t) return
     this.wiping = this.scene.isOnStele(t.x, t.y)
-    if (this.wiping && this.data.wipeTip) this.setData({ wipeTip: false })
+    if (this.wiping) this.showWipe()
   },
   onTouchMove(e) {
     const t = e.touches[0]
     if (!this.wiping || !t) return
     this.scene.wipeAt(t.x, t.y)
+    const pct = Math.round((1 - this.scene.dustAmount()) * 100)
+    if (pct !== this.data.wipePct) this.setData({ wipePct: pct })
+  },
+  showWipe() {
+    clearTimeout(this.wipeHide)
+    if (!this.data.wipeShow) this.setData({ wipeShow: true })
+    if (this.scene) this.setData({ wipePct: Math.round((1 - this.scene.dustAmount()) * 100) })
+    this.wipeHide = setTimeout(() => this.setData({ wipeShow: false }), 2600)
   },
   onTouchEnd() {
+    if (this.wiping) this.showWipe()
     this.wiping = false
     this.flushWipe()
   },
@@ -287,8 +305,9 @@ Page({
   wipeOnce() {
     if (!this.scene) return
     this.scene.sweep()
+    this.showWipe()
     api.wipe(this.tombId, this.auth, { sessionId: this.sessionId, progress: 0.35 })
-      .then((r) => { if (this.tomb) this.tomb.wipeLevel = r.wipeLevel; this.scene.setWipeLevel(r.wipeLevel) })
+      .then((r) => { if (this.tomb) this.tomb.wipeLevel = r.wipeLevel; this.scene.setWipeLevel(r.wipeLevel); this.showWipe() })
       .catch((e) => wx.showToast({ title: e.message, icon: 'none' }))
   },
 
@@ -307,7 +326,8 @@ Page({
       wx.showToast({ title: e.message, icon: 'none' })
     }
   },
-  openFlowers() { this.setData({ sheet: 'flower' }) },
+  openFlowers() { this.openSheet('flower') },
+  openSheet(k) { this.setData({ sheet: k, sheetTitle: SHEET_TITLE[k] || '' }) },
   pickFlower(e) {
     this.setData({ sheet: '' })
     this.offer('flower', e.currentTarget.dataset.id)
@@ -343,7 +363,7 @@ Page({
     if (i < 0 && ins.status === 'approved' && !mine) this.showHint('inscription')
     this.setInscriptions(list)
   },
-  openMessages() { this.setData({ sheet: 'message' }) },
+  openMessages() { this.openSheet('message') },
   onDraft(e) { this.setData({ draft: e.detail.value }) },
   async postMessage() {
     const body = (this.data.draft || '').trim()
@@ -373,7 +393,13 @@ Page({
   },
 
   // ---------- 设置 ----------
-  openSettings() { this.setData({ sheet: 'settings', nameErr: '' }) },
+  openSettings() { this.setData({ nameErr: '' }); this.openSheet('settings') },
+  cycleWeather() {
+    const order = ['clear', 'cloudy', 'rain']
+    const next = order[(order.indexOf(this.data.env.weather) + 1) % order.length]
+    this.setEnvKey({ currentTarget: { dataset: { key: 'weather', val: next } } })
+    wx.showToast({ title: '天气：' + ({ clear: '晴', cloudy: '阴', rain: '细雨' })[next], icon: 'none' })
+  },
   setEnvKey(e) {
     const { key, val } = e.currentTarget.dataset
     const env = Object.assign({}, this.data.env, { [key]: val })
@@ -396,7 +422,7 @@ Page({
   // ---------- 邀请 ----------
   openInvite() {
     if (!this.inviteToken) { wx.showToast({ title: '这台手机上没有这座墓的邀请链接', icon: 'none' }); return }
-    this.setData({ sheet: 'invite' })
+    this.openSheet('invite')
   },
   copyWebLink() {
     wx.setClipboardData({ data: `${config.webOrigin}/t/${this.tombId}?inv=${encodeURIComponent(this.inviteToken)}` })

@@ -1,49 +1,70 @@
-<view class="page">
+<view class="tomb-root">
   <canvas type="2d" id="scene" class="scene"
     bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd" bindtouchcancel="onTouchEnd"></canvas>
 
-  <!-- 顶栏：返回 / 称呼 / 在场人数（避开胶囊按钮） -->
-  <view class="top" style="top: {{navTop}}px; height: {{navH}}px;">
-    <view class="back" bindtap="goBack">‹</view>
-    <view class="pill name" wx:if="{{status === 'ready'}}">{{tombName}}</view>
-    <view class="pill online" wx:if="{{status === 'ready'}}"><text class="dot {{live ? 'on' : ''}}"></text>{{online}} 人在墓前</view>
-  </view>
-  <view class="tools" style="top: {{navTop + navH + 10}}px;" wx:if="{{status === 'ready'}}">
-    <view class="icon" bindtap="openSettings">设</view>
-    <view class="icon" bindtap="openInvite" wx:if="{{canShare}}">邀</view>
+  <!-- 顶栏：返回 + 在场人数（右侧让出胶囊按钮） -->
+  <view class="hud-top" style="top: {{navTop}}px; height: {{navH}}px;" wx:if="{{status === 'ready'}}">
+    <view class="icon-btn" bindtap="goBack"><image class="ico" src="/assets/icons/back-ink.png" /></view>
+    <view class="presence-chip">{{online}} 位亲人在<text class="live {{live ? 'on' : ''}}"></text></view>
   </view>
 
-  <!-- 他人动作短提示：一行，约 3 秒消失，不可点开 -->
-  <view class="hint {{hintOn ? 'show' : ''}}" style="top: {{navTop + navH + 14}}px;">{{hint}}</view>
+  <!-- 称呼 / 季节 / 我是 -->
+  <view class="tomb-title" style="top: {{navTop + navH + 12}}px;" wx:if="{{status === 'ready'}}">
+    <view class="name-chip strong">{{tombName}}</view>
+    <view class="season-chip">{{seasonLabel}} · {{phaseLabel}}</view>
+    <view class="name-chip" bindtap="openSettings">我是：{{displayName}}</view>
+  </view>
 
-  <view class="wipe-tip" wx:if="{{status === 'ready' && wipeTip}}">在碑面上来回滑动，可以擦拭墓碑</view>
+  <!-- 右侧圆按钮：景 / 晴 / 邀 / 管 -->
+  <view class="icon-col" style="top: {{navTop + navH + 12}}px;" wx:if="{{status === 'ready'}}">
+    <view class="icon-btn" bindtap="openSettings">景</view>
+    <view class="icon-btn" bindtap="cycleWeather">{{weatherChar}}</view>
+    <view class="icon-btn" bindtap="openInvite" wx:if="{{canShare}}">邀</view>
+    <view class="icon-btn {{pendingCount ? 'on' : ''}}" bindtap="openMessages" wx:if="{{role === 'creator'}}">管<view class="dot-badge" wx:if="{{pendingCount}}">{{pendingCount}}</view></view>
+  </view>
 
-  <!-- 仪式栏：五种动作 + 留言（纸钱不在主栏） -->
-  <view class="bar" wx:if="{{status === 'ready'}}">
-    <view class="act" bindtap="openFlowers"><view class="g">花</view><text>献花</text></view>
-    <view class="act" bindtap="doIncense"><view class="g">香</view><text>上香</text></view>
-    <view class="act" bindtap="doCandle"><view class="g">烛</view><text>点烛</text></view>
-    <view class="act" bindtap="wipeOnce"><view class="g">拭</view><text>擦碑</text></view>
-    <view class="act {{bowing ? 'on' : ''}}" bindtap="toggleBow"><view class="g">躬</view><text>{{bowing ? '停下' : '鞠躬'}}</text></view>
-    <view class="act" bindtap="openMessages"><view class="g">言<view class="badge" wx:if="{{pendingCount}}">{{pendingCount}}</view></view><text>留言</text></view>
+  <!-- 他人动作短提示 -->
+  <view class="action-toast {{hintOn ? 'show' : ''}}" style="top: {{navTop + navH + 96}}px;">{{hint}}</view>
+
+  <!-- 右下侧栏：留言 -->
+  <view class="side-actions" wx:if="{{status === 'ready'}}">
+    <view class="side-btn" bindtap="openMessages"><image class="ico" src="/assets/icons/message-ink.png" />留言</view>
+  </view>
+
+  <!-- 擦碑进度 -->
+  <view class="wipe-panel {{wipeShow ? 'show' : ''}}" wx:if="{{status === 'ready'}}">
+    <view class="row"><text class="strong">{{wipePct >= 100 ? '墓碑已擦拭干净' : '擦拭墓碑'}}</text><text>{{wipePct}}%</text></view>
+    <view class="wipe-bar"><view class="fill" style="width: {{wipePct}}%;"></view></view>
+    <view class="row tip">在碑面上来回滑动，或点「擦碑」擦一遍</view>
+  </view>
+
+  <!-- 仪式栏 -->
+  <view class="ritual-bar" wx:if="{{status === 'ready'}}">
+    <view class="ritual-btn" bindtap="openFlowers"><image class="ri" src="/assets/icons/flower.png" />献花</view>
+    <view class="ritual-btn" bindtap="doIncense"><image class="ri" src="/assets/icons/incense.png" />上香</view>
+    <view class="ritual-btn" bindtap="doCandle"><image class="ri" src="/assets/icons/candle.png" />点烛</view>
+    <view class="ritual-btn" bindtap="wipeOnce"><image class="ri" src="/assets/icons/wipe.png" />擦碑</view>
+    <view class="ritual-btn {{bowing ? 'active' : ''}}" bindtap="toggleBow"><image class="ri" src="/assets/icons/{{bowing ? 'bow-on' : 'bow'}}.png" />{{bowing ? '停下' : '鞠躬'}}</view>
   </view>
 
   <!-- 加载与错误 -->
-  <view class="cover" wx:if="{{status === 'loading'}}"><view class="muted">正在前往墓园…</view></view>
-  <view class="cover" wx:if="{{status === 'error'}}">
-    <view class="err-msg">{{errMsg}}</view>
-    <button class="btn" bindtap="goHome">回到首页</button>
+  <view class="loading" wx:if="{{status === 'loading'}}"><view class="ldot"></view><view>正在前往墓园…</view></view>
+  <view class="overlay-center" wx:if="{{status === 'error'}}">
+    <view class="card err-card">
+      <view class="h2">未能进入</view>
+      <view class="sub">{{errMsg}}</view>
+      <button class="btn" hover-class="hover" bindtap="goHome">回到首页</button>
+    </view>
   </view>
 
   <!-- 底部抽屉 -->
   <view class="mask" wx:if="{{sheet}}" bindtap="closeSheet"></view>
   <view class="sheet {{sheet ? 'open' : ''}}" catchtap="noop" catchtouchmove="noop">
-    <view class="grab"></view>
+    <view class="close-row"><text class="h3">{{sheetTitle}}</text><text class="close" bindtap="closeSheet">关闭</text></view>
 
     <view wx:if="{{sheet === 'flower'}}">
-      <view class="s-title">献一束花</view>
-      <view class="flowers">
-        <view wx:for="{{flowers}}" wx:key="id" class="flower" data-id="{{item.id}}" bindtap="pickFlower">
+      <view class="flower-grid">
+        <view wx:for="{{flowers}}" wx:key="id" class="flower-opt" data-id="{{item.id}}" bindtap="pickFlower">
           <view class="f-dot f-{{item.id}}"></view>
           <text>{{item.name}}</text>
         </view>
@@ -52,17 +73,15 @@
     </view>
 
     <view wx:if="{{sheet === 'message'}}">
-      <view class="s-title">留言</view>
-      <scroll-view scroll-y class="ins-list">
+      <scroll-view scroll-y class="msg-list">
         <view wx:if="{{!inscriptions.length}}" class="muted center pad">还没有留言。</view>
-        <view wx:for="{{inscriptions}}" wx:key="id" class="ins">
-          <view class="ins-body">{{item.body}}</view>
-          <view class="ins-meta">
-            <text>{{item.displayName}} · {{item.time}}</text>
-            <text wx:if="{{item.status === 'pending'}}" class="tag">审核中</text>
-            <text wx:if="{{item.status === 'rejected'}}" class="tag dim">未通过</text>
-            <text wx:if="{{item.status === 'removed'}}" class="tag dim">已删除</text>
+        <view wx:for="{{inscriptions}}" wx:key="id" class="msg">
+          <view class="meta">{{item.displayName}} · {{item.time}}
+            <text wx:if="{{item.status === 'pending'}}" class="badge wait">审核中</text>
+            <text wx:if="{{item.status === 'rejected'}}" class="badge off">未通过</text>
+            <text wx:if="{{item.status === 'removed'}}" class="badge off">已删除</text>
           </view>
+          <view class="body">{{item.body}}</view>
           <view class="mod" wx:if="{{role === 'creator' && item.status === 'pending'}}">
             <text class="mbtn ok" data-id="{{item.id}}" data-action="approve" bindtap="moderate">通过</text>
             <text class="mbtn" data-id="{{item.id}}" data-action="reject" bindtap="moderate">不通过</text>
@@ -73,52 +92,40 @@
         </view>
       </scroll-view>
       <textarea class="textarea compose" value="{{draft}}" maxlength="140" placeholder="写下想说的话（140 字以内，审核通过后亲友可见）" bindinput="onDraft" fixed cursor-spacing="20" />
-      <button class="btn" bindtap="postMessage" loading="{{posting}}" disabled="{{posting}}">留下</button>
+      <button class="btn" hover-class="hover" bindtap="postMessage" loading="{{posting}}" disabled="{{posting}}">留下</button>
     </view>
 
     <view wx:if="{{sheet === 'settings'}}">
-      <view class="s-title">场景与我</view>
-      <view class="field">
-        <view class="label">季节（只改变你自己的画面）</view>
-        <view class="chips">
-          <view class="chip {{env.season === '' ? 'on' : ''}}" data-key="season" data-val="" bindtap="setEnvKey">跟随墓园</view>
-          <view wx:for="{{seasons}}" wx:key="id" class="chip {{env.season === item.id ? 'on' : ''}}" data-key="season" data-val="{{item.id}}" bindtap="setEnvKey">{{item.name}}</view>
-        </view>
+      <view class="opt-title">季节（只改变你自己的画面）</view>
+      <view class="seg">
+        <view class="seg-btn {{env.season === '' ? 'on' : ''}}" data-key="season" data-val="" bindtap="setEnvKey">跟随墓园</view>
+        <view wx:for="{{seasons}}" wx:key="id" class="seg-btn {{env.season === item.id ? 'on' : ''}}" data-key="season" data-val="{{item.id}}" bindtap="setEnvKey">{{item.name}}</view>
       </view>
-      <view class="field">
-        <view class="label">昼夜</view>
-        <view class="chips">
-          <view wx:for="{{tods}}" wx:key="id" class="chip {{env.tod === item.id ? 'on' : ''}}" data-key="tod" data-val="{{item.id}}" bindtap="setEnvKey">{{item.name}}</view>
-        </view>
+      <view class="opt-title">昼夜</view>
+      <view class="seg">
+        <view wx:for="{{tods}}" wx:key="id" class="seg-btn {{env.tod === item.id ? 'on' : ''}}" data-key="tod" data-val="{{item.id}}" bindtap="setEnvKey">{{item.name}}</view>
       </view>
-      <view class="field">
-        <view class="label">天气</view>
-        <view class="chips">
-          <view wx:for="{{weathers}}" wx:key="id" class="chip {{env.weather === item.id ? 'on' : ''}}" data-key="weather" data-val="{{item.id}}" bindtap="setEnvKey">{{item.name}}</view>
-        </view>
+      <view class="opt-title">天气</view>
+      <view class="seg">
+        <view wx:for="{{weathers}}" wx:key="id" class="seg-btn {{env.weather === item.id ? 'on' : ''}}" data-key="weather" data-val="{{item.id}}" bindtap="setEnvKey">{{item.name}}</view>
       </view>
-      <view class="field">
-        <view class="label">画质</view>
-        <view class="chips">
-          <view class="chip {{env.quality === 'standard' ? 'on' : ''}}" data-key="quality" data-val="standard" bindtap="setEnvKey">标准</view>
-          <view class="chip {{env.quality === 'smooth' ? 'on' : ''}}" data-key="quality" data-val="smooth" bindtap="setEnvKey">流畅</view>
-        </view>
+      <view class="opt-title">画质</view>
+      <view class="seg">
+        <view class="seg-btn {{env.quality === 'standard' ? 'on' : ''}}" data-key="quality" data-val="standard" bindtap="setEnvKey">标准</view>
+        <view class="seg-btn {{env.quality === 'smooth' ? 'on' : ''}}" data-key="quality" data-val="smooth" bindtap="setEnvKey">流畅</view>
       </view>
-      <view class="field">
-        <view class="label">我的显示名</view>
-        <view class="name-row">
-          <input class="input grow" value="{{displayName}}" maxlength="20" bindinput="onDisplayName" />
-          <button class="btn mini" bindtap="saveDisplayName">保存</button>
-        </view>
-        <view wx:if="{{nameErr}}" class="err">{{nameErr}}</view>
+      <view class="opt-title">我的显示名</view>
+      <view class="name-row">
+        <input class="input grow" value="{{displayName}}" maxlength="20" bindinput="onDisplayName" />
+        <button class="btn small" hover-class="hover" bindtap="saveDisplayName">保存</button>
       </view>
+      <view wx:if="{{nameErr}}" class="err">{{nameErr}}</view>
     </view>
 
     <view wx:if="{{sheet === 'invite'}}">
-      <view class="s-title">邀请亲友</view>
-      <view class="muted center">只有收到邀请的人能进入这座墓。</view>
-      <button class="btn share" open-type="share">转发给微信好友或群</button>
-      <button class="btn ghost" bindtap="copyWebLink">复制网页链接</button>
+      <view class="sub">只有收到邀请的人能进入这座墓。请只把它转发给家人。</view>
+      <button class="btn share" hover-class="hover" open-type="share">转发给微信好友或群</button>
+      <button class="btn ghost" hover-class="hover" bindtap="copyWebLink">复制网页链接</button>
     </view>
   </view>
 </view>

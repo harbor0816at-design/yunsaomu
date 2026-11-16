@@ -6,13 +6,15 @@ Page({
   data: {
     slogan: config.slogan,
     tombs: [],
+    showMine: false,
     showJoin: false,
     joinText: '',
     joinErr: ''
   },
 
   onShow() {
-    this.setData({ tombs: store.listTombs() })
+    const tombs = store.listTombs()
+    this.setData({ tombs, showMine: this.data.showMine || tombs.length > 0 })
   },
 
   goCreate() { wx.navigateTo({ url: '/pages/create/create' }) },
@@ -39,7 +41,8 @@ Page({
     })
   },
 
-  toggleJoin() { this.setData({ showJoin: !this.data.showJoin, joinErr: '' }) },
+  toggleJoin() { this.setData({ showJoin: !this.data.showJoin, showMine: false, joinErr: '' }) },
+  toggleMine() { this.setData({ showMine: !this.data.showMine, showJoin: false, tombs: store.listTombs() }) },
 
   onJoinInput(e) { this.setData({ joinText: e.detail.value, joinErr: '' }) },
 

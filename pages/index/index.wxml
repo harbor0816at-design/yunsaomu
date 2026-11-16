@@ -1,51 +1,52 @@
-<view class="wrap">
-  <view class="hero">
-    <view class="mark">
-      <view class="stele"></view>
-      <view class="base"></view>
-    </view>
-    <view class="title">云扫墓</view>
+<view class="page-bg wrap">
+  <view class="brand">
+    <image class="mark" src="/assets/brand.png" mode="aspectFit" />
+    <view class="h1">云扫墓</view>
     <view class="slogan">{{slogan}}</view>
-    <view class="desc muted">一座随时可以来看看的线上纪念墓。仅持链接的亲友可见。</view>
+    <view class="desc">一座仅家人可见的纪念墓。打开链接，就能和亲人一起献花、上香、鞠躬。</view>
+    <view class="minor-tip">建议在家长陪同下使用。</view>
   </view>
 
-  <view class="entries">
-    <button class="btn" bindtap="goCreate">为亲人建一座纪念墓</button>
+  <view class="actions">
+    <button class="btn" hover-class="hover" bindtap="goCreate">为亲人建一座纪念墓</button>
+    <button class="btn ghost" hover-class="hover" bindtap="toggleMine">我的纪念墓</button>
+    <button class="btn ghost" hover-class="hover" bindtap="toggleJoin">通过邀请进入</button>
+  </view>
 
-    <view class="card">
-      <view class="card-h">我的纪念墓</view>
-      <block wx:if="{{tombs.length}}">
-        <view class="row" wx:for="{{tombs}}" wx:key="id" data-id="{{item.id}}" bindtap="openTomb" bindlongpress="removeTomb">
+  <view class="card panel" wx:if="{{showMine}}">
+    <view class="h3">我的纪念墓</view>
+    <block wx:if="{{tombs.length}}">
+      <view class="row" wx:for="{{tombs}}" wx:key="id" data-id="{{item.id}}" bindtap="openTomb" bindlongpress="removeTomb">
+        <view class="row-main">
           <view class="row-name">{{item.name || '纪念墓'}}</view>
-          <view class="row-tag">{{item.role === 'creator' ? '我建的' : '我来过'}}</view>
-          <view class="row-go">›</view>
+          <view class="row-sub">{{item.role === 'creator' ? '我建的 · 可管理' : '我来过'}}</view>
         </view>
-        <view class="muted tip">记录只保存在这台手机上，换设备或清除微信数据会丢失。长按可从本机移除。</view>
-      </block>
-      <view wx:else class="empty">
-        <view class="muted">这台手机上还没有纪念墓的记录。</view>
-        <view class="link" bindtap="goCreate">现在去建一座 ›</view>
+        <view class="row-go">›</view>
       </view>
-    </view>
-
-    <view class="card">
-      <view class="card-h" bindtap="toggleJoin">通过邀请进入 <text class="muted">{{showJoin ? '收起' : '展开'}}</text></view>
-      <view wx:if="{{showJoin}}">
-        <view class="muted">亲友在微信里转发的纪念墓可以直接点开；如果收到的是网页链接，请粘贴到这里。</view>
-        <textarea class="textarea join" value="{{joinText}}" placeholder="粘贴邀请链接" bindinput="onJoinInput" auto-height maxlength="600" />
-        <view wx:if="{{joinErr}}" class="err">{{joinErr}}</view>
-        <view class="join-btns">
-          <button class="btn ghost small" bindtap="pasteJoin">从剪贴板粘贴</button>
-          <button class="btn small" bindtap="submitJoin">进入</button>
-        </view>
-      </view>
+      <view class="muted tip">记录只保存在这台手机上，换设备或清除微信数据会丢失。长按可从本机移除。</view>
+    </block>
+    <view wx:else>
+      <view class="muted">这台手机上还没有纪念墓的记录。</view>
+      <view class="link" bindtap="goCreate">现在去建一座 ›</view>
     </view>
   </view>
 
-  <view class="foot muted">
-    <text bindtap="goLegal" data-doc="privacy">隐私政策</text>
-    <text class="sep">·</text>
-    <text bindtap="goLegal" data-doc="terms">用户协议</text>
-    <view>建议在家长陪同下使用</view>
+  <view class="card panel" wx:if="{{showJoin}}">
+    <view class="h3">通过邀请进入</view>
+    <view class="sub">亲友在微信里转发的纪念墓可以直接点开；如果收到的是网页链接，请粘贴到这里。</view>
+    <textarea class="textarea" value="{{joinText}}" placeholder="粘贴邀请链接" bindinput="onJoinInput" auto-height maxlength="600" />
+    <view wx:if="{{joinErr}}" class="err">{{joinErr}}</view>
+    <view class="join-btns">
+      <button class="btn ghost small" bindtap="pasteJoin">从剪贴板粘贴</button>
+      <button class="btn small" bindtap="submitJoin">进入</button>
+    </view>
+  </view>
+
+  <view class="footer">
+    <text>预览版 · 不推广</text>
+    <text class="a" bindtap="goLegal" data-doc="privacy">隐私政策</text>
+    <text>·</text>
+    <text class="a" bindtap="goLegal" data-doc="terms">用户协议</text>
+    <text class="pending">待法务审核</text>
   </view>
 </view>

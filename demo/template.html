@@ -5,175 +5,189 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>云扫墓 · MVP 演示</title>
 <style>
-:root{--ink:#f1ece2;--dim:#b9b2a3;--line:rgba(222,210,182,.28);--panel:rgba(24,30,27,.96);--accent:#d8c79a;--accent-ink:#1d2420}
+:root{--ink:#2a2a26;--ink-soft:#4a4a44;--paper:#e8e4d8;--paper-2:#f3efe4;--pine:#3d4f40;--pine-2:#2f3e32;--stone:#8a877c;--stone-light:#b8b4a8;--bg:#d5d8cc;--danger:#7a3a32;--ok:#3d5a42;--gold:#e6c86e;--line:#c5bfb0;--field:#faf7f0;--shadow:0 8px 28px rgba(40,40,32,.16);--serif:"Noto Serif CJK SC","Noto Serif SC","Songti SC","STSong",serif;--sans:"PingFang SC","Noto Sans CJK SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:#0f1311;color:var(--ink);font-family:"Songti SC","STSong","Noto Serif SC",serif;font-size:15px;line-height:1.6}
-#phone{position:relative;max-width:430px;height:100%;margin:0 auto;overflow:hidden;overflow:clip;background:#1d2420}
+html,body{margin:0;height:100%;background:#c5cbb8;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+#phone{position:relative;max-width:430px;height:100%;margin:0 auto;overflow:hidden;overflow:clip;background:var(--bg)}
 .screen{position:absolute;inset:0;overflow-y:auto;display:none}
 .screen.on{display:block}
-.demo-tag{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:40;font-size:11px;color:#1d2420;background:rgba(216,199,154,.9);padding:2px 10px;border-radius:99px;white-space:nowrap;pointer-events:none}
+.pagebg{background:radial-gradient(ellipse at 50% 0%,#e4e7dc 0%,transparent 55%),linear-gradient(180deg,#cfd4c6,#d8dccf 40%,#c5cbb8)}
+.demo-tag{position:absolute;top:0;left:0;right:0;z-index:40;background:#3d3a30;color:#f3e7c4;font-size:11px;text-align:center;padding:3px 10px;letter-spacing:.04em;pointer-events:none}
 button{font-family:inherit;cursor:pointer}
-.btn{display:flex;align-items:center;justify-content:center;width:100%;height:46px;border-radius:23px;border:0;font-size:16px;letter-spacing:2px;background:var(--accent);color:var(--accent-ink)}
-.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
-.btn:disabled{opacity:.45}
-.muted{color:var(--dim);font-size:13px}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;padding:12px 20px;border:0;border-radius:14px;font-size:16px;letter-spacing:.04em;background:var(--pine);color:var(--paper-2);box-shadow:var(--shadow);transition:transform .12s,background .12s}
+.btn:active{transform:scale(.98);background:var(--pine-2)}
+.btn.ghost{background:transparent;color:var(--pine);box-shadow:none;border:1px solid #8a9584}
+.btn.small{min-height:44px;font-size:14px;padding:8px 14px}
+.muted{color:var(--stone);font-size:12px}
+.card{background:#f3efe4eb;border:1px solid rgba(90,86,74,.12);border-radius:18px;padding:22px 20px 24px;box-shadow:var(--shadow)}
+.card h2{font-family:var(--serif);font-size:22px;margin:0 0 8px}
+.card h3{font-family:var(--serif);font-size:17px;margin:0 0 8px}
+.sub{color:var(--ink-soft);font-size:13px;line-height:1.6;margin-bottom:16px}
 /* 首页 */
-#home{padding:44px 22px 30px;background:linear-gradient(180deg,#2b3a35 0%,#1d2420 55%,#181d1a 100%)}
-.hero{text-align:center;padding:16px 0 22px}
-.mark{width:60px;height:75px;margin:0 auto 12px;position:relative}
-.mark i{position:absolute;left:15px;top:0;width:30px;height:59px;border-radius:15px 15px 3px 3px;background:linear-gradient(180deg,#8e978d,#5f685f);box-shadow:0 0 20px rgba(216,199,154,.18)}
-.mark b{position:absolute;left:5px;bottom:0;width:50px;height:13px;border-radius:3px;background:#4c544c}
-.title{font-size:28px;letter-spacing:8px}
-.slogan{font-size:16px;color:var(--accent);margin-top:6px;letter-spacing:2px}
-.card{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:16px}
-.card h3{margin:0 0 8px;font-size:16px;font-weight:400;display:flex;justify-content:space-between}
-.row{display:flex;align-items:center;padding:11px 0;border-top:1px solid rgba(255,255,255,.06);cursor:pointer}
-.row .n{flex:1;font-size:16px}
-.tag{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:99px;padding:0 8px;margin-right:8px}
-.link{color:var(--accent);cursor:pointer}
+#home{padding:52px 22px 30px}
+.brand{display:flex;flex-direction:column;align-items:center;gap:10px;margin:8px 0 28px;text-align:center}
+.brand svg{width:64px;height:64px}
+.brand h1{font-family:var(--serif);font-weight:700;font-size:32px;letter-spacing:.18em;margin:0}
+.slogan{font-family:var(--serif);font-size:19px;letter-spacing:.12em}
+.brand p{margin:0;max-width:28em;line-height:1.7;color:var(--ink-soft);font-size:15px}
+.actions{display:flex;flex-direction:column;gap:12px}
+.panel{margin-top:16px}
+.row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #e0d9c8;cursor:pointer}
+.row .n{flex:1;font-family:var(--serif);font-size:16px}
+.row small{display:block;color:var(--stone);font-size:12px;font-family:var(--sans)}
+.link{color:var(--pine);text-decoration:underline;cursor:pointer}
+.footer{margin-top:28px;text-align:center;font-size:12px;color:var(--stone);display:flex;flex-wrap:wrap;gap:6px 10px;justify-content:center}
+.footer a{color:var(--pine)}
+.pending{background:#efe3c0;color:#6a4a12;font-weight:600;padding:1px 7px;border-radius:6px}
+.mvp{font-size:12px;color:var(--ink-soft);line-height:1.7;margin-top:18px;border-top:1px dashed var(--line);padding-top:12px}
+.mvp b{color:var(--pine)}
 /* 建墓 */
-#create{padding:52px 22px 30px}
-.navb{position:absolute;top:28px;left:14px;font-size:26px;color:var(--ink);background:none;border:0}
-.consent{display:flex;gap:10px;padding:14px;border:1px solid var(--line);border-radius:10px;margin:8px 0 22px;background:rgba(255,255,255,.03);cursor:pointer}
-.box{flex:none;width:20px;height:20px;border:1px solid var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--accent-ink);margin-top:2px}
-.box.on{background:var(--accent)}
-.field{margin-bottom:18px}
-.label{font-size:14px;color:var(--dim);margin-bottom:6px}
-.req{color:#e2a87d;margin-left:3px}
-input,textarea,select{width:100%;padding:11px 14px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:15px}
-textarea{min-height:70px;resize:none}
-.err{color:#f0a58a;font-size:13px;margin-top:4px;min-height:1em}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:5px 14px;border-radius:99px;border:1px solid var(--line);font-size:13px;cursor:pointer;user-select:none}
-.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.two{display:flex;gap:10px}
-.two .btn{flex:1}.two .btn.grow{flex:2}
+#create{padding:44px 16px 30px}
+.steps{display:flex;gap:6px;margin-bottom:16px}.steps span{flex:1;height:4px;border-radius:4px;background:#cfc8b8}.steps span.on{background:var(--pine)}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.label,.opt-title{font-size:13px;color:var(--ink-soft)}
+.opt-title{margin:12px 0 6px;font-weight:600}
+input,textarea{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--ink);padding:10px 12px;font-size:16px;font-family:inherit}
+textarea{min-height:88px;resize:none}
+.err{color:var(--danger);font-size:13px;margin:4px 0 10px;min-height:0}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;margin:12px 0 16px;color:var(--ink-soft);cursor:pointer}
+.box{flex:none;width:18px;height:18px;border-radius:4px;border:1px solid #8a9584;background:var(--field);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--paper-2);margin-top:2px}
+.box.on{background:var(--pine);border-color:var(--pine)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg-btn{min-height:40px;padding:6px 12px;border-radius:10px;border:1px solid #b9b4a4;background:var(--field);color:var(--ink);font-size:14px;cursor:pointer;display:flex;align-items:center}
+.seg-btn.on{background:var(--pine);color:var(--paper-2);border-color:var(--pine)}
+.styles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.style-opt{border:2px solid var(--line);border-radius:12px;background:var(--field);padding:10px 8px;text-align:center;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.style-opt.picked{border-color:var(--pine);background:#e8ece3}
+.style-opt strong{font-family:var(--serif);font-size:14px}.style-opt small{font-size:11px;color:var(--ink-soft);line-height:1.4}
+.two{display:flex;gap:10px;margin-top:8px}.two .btn{flex:1}.two .btn.grow{flex:2}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 /* 场景 */
-#tomb{overflow:hidden;overflow:clip}
+#tomb{overflow:hidden;overflow:clip;background:#b8c2b6}
 #scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
-.top{position:absolute;top:30px;left:10px;right:10px;display:flex;align-items:center;gap:7px;z-index:5}
-.back{width:32px;height:32px;border-radius:50%;background:rgba(18,22,20,.55);color:#fff;font-size:22px;border:0;line-height:1}
-.pill{background:rgba(18,22,20,.55);border:1px solid var(--line);border-radius:99px;padding:3px 11px;font-size:12px;white-space:nowrap}
-.pill.name{color:var(--accent);max-width:140px;overflow:hidden;text-overflow:ellipsis}
-.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#8fd18b;box-shadow:0 0 5px #8fd18b;margin-right:5px;vertical-align:middle}
-.tools{position:absolute;top:72px;right:12px;display:flex;flex-direction:column;gap:8px;z-index:5}
-.icon{width:36px;height:36px;border-radius:50%;background:rgba(18,22,20,.6);border:1px solid var(--line);color:var(--ink);font-size:14px}
-.hint{position:absolute;top:76px;left:50%;transform:translateX(-50%);background:rgba(18,22,20,.7);border-radius:99px;padding:5px 14px;font-size:13px;opacity:0;transition:opacity .4s;pointer-events:none;white-space:nowrap;z-index:4}
-.hint.show{opacity:1}
-.wipetip{position:absolute;left:50%;bottom:110px;transform:translateX(-50%);font-size:12px;color:var(--dim);background:rgba(18,22,20,.55);padding:4px 12px;border-radius:99px;white-space:nowrap;pointer-events:none;transition:opacity .5s}
-.bar{position:absolute;left:8px;right:8px;bottom:12px;display:flex;background:rgba(18,22,20,.75);border:1px solid var(--line);border-radius:16px;padding:7px 4px;z-index:5}
-.act{flex:1;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--dim);background:none;border:0;padding:0}
-.act .g{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid rgba(216,199,154,.6);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--accent);margin-bottom:3px;background:linear-gradient(180deg,rgba(70,62,40,.7),rgba(30,28,20,.7))}
-.act:active .g{transform:scale(.93)}
-.act.on .g{background:var(--accent);color:var(--accent-ink)}
-.badge{position:absolute;right:-3px;top:-3px;min-width:15px;height:15px;border-radius:8px;background:#d9734e;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 3px}
-.mask{position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:9;display:none}
+.hud-top{position:absolute;top:28px;left:10px;right:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:5}
+.hud-l,.hud-r{display:flex;align-items:center;gap:8px}
+.icon-btn{position:relative;width:40px;height:40px;border-radius:50%;border:0;background:#f3efe4e6;color:var(--ink);display:grid;place-items:center;box-shadow:0 2px 10px #28282024;font-size:14px;padding:0}
+.icon-btn svg{width:20px;height:20px}
+.icon-btn.on{background:var(--pine);color:var(--paper)}
+.presence-chip{background:#f3efe4eb;border-radius:999px;padding:0 14px;height:40px;font-size:13px;box-shadow:0 2px 10px #28282024;display:flex;align-items:center;white-space:nowrap}
+.tomb-title{position:absolute;top:78px;left:12px;z-index:5;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.season-chip,.name-chip{font-size:12px;background:#f3efe4db;border-radius:999px;padding:3px 10px;border:0;color:var(--ink-soft)}
+.name-chip.strong{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);padding:4px 12px}
+.name-chip.btnlike{cursor:pointer}
+.badge-dot{position:absolute;right:-3px;top:-3px;min-width:16px;height:16px;border-radius:8px;background:var(--danger);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+.action-toast{position:absolute;left:50%;top:150px;transform:translateX(-50%);z-index:25;background:#242622db;color:var(--paper-2);font-size:13px;padding:8px 16px;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .3s}
+.action-toast.show{opacity:1}
+.side-actions{position:absolute;right:10px;bottom:96px;z-index:5;display:flex;flex-direction:column;gap:8px}
+.side-btn{width:60px;min-height:56px;border:0;border-radius:14px;background:#f3efe4eb;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;box-shadow:0 2px 10px #28282029;padding:0}
+.side-btn svg{width:22px;height:22px}
+.wipe-panel{position:absolute;left:50%;transform:translateX(-50%);bottom:96px;width:min(260px,calc(100% - 96px));z-index:6;background:#f3efe4f0;border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);font-size:12px;color:var(--ink-soft);opacity:0;transition:opacity .3s;pointer-events:none}
+.wipe-panel.show{opacity:1}
+.wipe-panel strong{color:var(--ink);font-size:14px}
+.wipe-panel .r{display:flex;justify-content:space-between;align-items:center}
+.wipe-bar{height:6px;border-radius:6px;background:#d5cfbf;margin-top:6px;overflow:hidden}.wipe-bar i{display:block;height:100%;background:var(--pine);width:0;transition:width .2s}
+.ritual-bar{position:absolute;left:0;right:0;bottom:0;padding:8px 6px 10px;display:flex;justify-content:space-around;gap:2px;background:linear-gradient(180deg,#2a2a2600,#2a2a2673 18%,#242622e0);z-index:5}
+.ritual-btn{flex:1;min-width:0;min-height:56px;border:0;background:transparent;color:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;letter-spacing:.04em;padding:0}
+.ritual-btn svg{width:24px;height:24px}
+.ritual-btn.active{color:var(--gold)}
+.ritual-btn:active svg{transform:scale(.92)}
+.mask{position:absolute;inset:0;background:#3236304d;z-index:9;display:none}
 .mask.on{display:block}
-.sheet{position:absolute;left:0;right:0;bottom:0;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding:0 18px 20px;max-height:80%;overflow-y:auto;z-index:10}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:10;background:var(--paper-2);border-radius:18px 18px 0 0;padding:16px 16px 20px;box-shadow:0 -8px 32px #0003;max-height:76%;overflow:auto;transform:translateY(105%);transition:transform .26s ease}
 .sheet.open{transform:none}
-.grab{width:40px;height:4px;border-radius:2px;background:rgba(216,199,154,.35);margin:9px auto 5px}
-.st{font-size:17px;text-align:center;margin:5px 0 14px;color:var(--accent)}
-.flowers{display:flex;justify-content:space-around;margin-bottom:14px}
-.flower{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
-.fd{width:56px;height:56px;border-radius:50%;border:1px solid var(--line)}
-.f-baiju{background:radial-gradient(circle,#e8cf6a 18%,#f7f4ea 22%,#f7f4ea 60%,#dcd6c4 100%)}
+.close-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.close-row h3{font-family:var(--serif);margin:0;font-size:18px}
+.close-row button{border:0;background:none;color:var(--pine);font-size:14px}
+.flower-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.flower-opt{border:2px solid var(--line);border-radius:12px;background:var(--field);min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:14px}
+.flower-opt:active{border-color:var(--pine)}
+.fd{width:44px;height:44px;border-radius:50%}
+.f-baiju{background:radial-gradient(circle,#e8cf6a 18%,#f7f4ea 22%,#f7f4ea 60%,#dcd6c4 100%);box-shadow:inset 0 0 0 1px #ddd6c4}
 .f-huangju{background:radial-gradient(circle,#b9822a 18%,#f2c94c 22%,#f2c94c 60%,#d9a92e 100%)}
 .f-cuibai{background:radial-gradient(circle,#6f9a63 20%,#4f7d4f 60%,#3a6440 100%)}
-.ins{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
-.ins .b{font-size:15px;word-break:break-all}
-.ins .m{font-size:11px;color:var(--dim);margin-top:3px;display:flex;gap:7px;align-items:center}
-.t2{color:#e2c27d;border:1px solid rgba(226,194,125,.5);border-radius:4px;padding:0 5px}
-.mb{font-size:12px;padding:2px 11px;border-radius:99px;border:1px solid var(--line);background:none;color:var(--ink);margin-top:5px;margin-right:6px}
-.mb.ok{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(10,12,11,.85);color:#fff;padding:9px 16px;border-radius:8px;font-size:14px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:80%;text-align:center}
+.msg-list{list-style:none;margin:0 0 10px;padding:0;max-height:32vh;overflow:auto}
+.msg-list li{padding:10px 0;border-bottom:1px solid #e0d9c8;font-size:14px;line-height:1.55;word-break:break-all}
+.msg-list .meta{font-size:12px;color:var(--stone);margin-bottom:2px}
+.badge{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;background:#e4ddc8;color:var(--ink-soft);margin-left:6px}
+.badge.wait{background:#efe3c0}
+.mb{font-size:12px;padding:4px 12px;border-radius:10px;border:1px solid #b9b4a4;background:var(--field);color:var(--ink);margin:6px 6px 0 0}
+.mb.ok{background:var(--pine);color:var(--paper-2);border-color:var(--pine)}
+.toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:#242622e6;color:var(--paper-2);padding:9px 16px;border-radius:10px;font-size:14px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:80%;text-align:center}
 .toast.on{opacity:1}
-.dlg{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
+.dlg{position:absolute;inset:0;background:#32363073;display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
 .dlg.on{display:flex}
-.dlg .in{width:86%;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:12px}
-.mvp{font-size:12px;color:var(--dim);line-height:1.7;margin-top:22px;border-top:1px dashed var(--line);padding-top:12px}
-.mvp b{color:var(--accent);font-weight:400}
+.dlg .card{display:flex;flex-direction:column;gap:12px;width:100%}
+.warn{color:var(--danger)}
 </style>
 </head>
 <body>
 <div id="phone">
-  <div class="demo-tag">MVP 演示 · 数据只存在本机</div>
+  <div class="demo-tag">MVP 演示 · 数据只存在本机浏览器 · 亲友到访为模拟</div>
 
-  <!-- 首页 -->
-  <section id="home" class="screen on">
-    <div class="hero">
-      <div class="mark"><i></i><b></b></div>
-      <div class="title">云扫墓</div>
-      <div class="slogan">想念的时候，来看看。</div>
-      <div class="muted" style="margin-top:8px">一座随时可以来看看的线上纪念墓。仅持链接的亲友可见。</div>
+  <section id="home" class="screen on pagebg">
+    <div class="brand"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#3d4f40"/><path d="M8 50 Q20 42 32 50 Q44 42 56 50 L56 58 L8 58 Z" fill="#8a9a82"/><path d="M18 40 C18 22 26 16 32 12 C38 16 46 22 46 40 L42 40 C42 28 36 22 32 20 C28 22 22 28 22 40 Z" fill="#c9c3b0"/><rect x="28" y="36" width="8" height="16" rx="1" fill="#b8b4a4"/><path d="M28 36 Q32 30 36 36" fill="#b8b4a4"/><line x1="12" y1="18" x2="10" y2="36" stroke="#9aad90" stroke-width="1.2"/><line x1="16" y1="16" x2="14" y2="38" stroke="#8a9d82" stroke-width="1"/><line x1="50" y1="16" x2="52" y2="38" stroke="#8a9d82" stroke-width="1"/></svg><h1>云扫墓</h1><div class="slogan">想念的时候，来看看。</div>
+      <p>一座仅家人可见的纪念墓。打开链接，就能和亲人一起献花、上香、鞠躬。</p><div class="muted">建议在家长陪同下使用。</div></div>
+    <div class="actions">
+      <button class="btn" onclick="go('create')">为亲人建一座纪念墓</button>
+      <button class="btn ghost" onclick="togglePanel('mine')">我的纪念墓</button>
+      <button class="btn ghost" onclick="togglePanel('join')">通过邀请进入</button>
     </div>
-    <button class="btn" onclick="go('create')">为亲人建一座纪念墓</button>
-    <div class="card">
-      <h3>我的纪念墓</h3>
-      <div id="myList"></div>
-    </div>
-    <div class="card">
-      <h3>通过邀请进入</h3>
-      <div class="muted">亲友在微信里转发的纪念墓，点开就能直接进入。演示里可以先看看示例：</div>
-      <div class="link" style="margin-top:6px" onclick="enterSample()">进入示例纪念墓「奶奶」 ›</div>
-    </div>
-    <div class="mvp">
-      <b>MVP 范围</b>：建墓（只填称呼）→ 直接进墓园 → 献花、上香、点烛、擦碑、鞠躬 → 留言（审核后亲友可见）→ 邀请亲友。<br>
-      不在 MVP：AI 纪念回信、付费纪念服务、账号与跨设备、照片上传。<br>
-      演示中的「亲友到访」是本地模拟；小程序正式版通过实时频道同步。
-    </div>
+    <div class="card panel" id="pMine" style="display:none"><h3>我的纪念墓</h3><div id="myList"></div></div>
+    <div class="card panel" id="pJoin" style="display:none"><h3>通过邀请进入</h3>
+      <div class="sub">亲友在微信里转发的纪念墓，点开就能直接进入。演示里可以先看示例：</div>
+      <button class="btn small" onclick="enterSample()">进入示例纪念墓「奶奶」</button></div>
+    <div class="mvp"><b>MVP 范围</b>：建墓（只填称呼）→ 直接进墓园 → 献花、上香、点烛、擦碑、鞠躬 → 留言（审核后亲友可见）→ 邀请亲友。不在 MVP：AI 纪念回信、付费纪念服务、账号与跨设备、照片上传。</div>
+    <div class="footer"><span>预览版 · 不推广</span><a>隐私政策</a>·<a>用户协议</a><span class="pending">待法务审核</span></div>
   </section>
 
-  <!-- 建墓 -->
-  <section id="create" class="screen">
-    <button class="navb" onclick="go('home')">‹</button>
-    <div id="c1">
-      <div style="font-size:20px;margin-bottom:8px">建一座纪念墓</div>
-      <div class="consent" onclick="toggleConsent()">
-        <div class="box" id="cbox"></div>
-        <div class="muted">我有权为这位亲人发布纪念内容；纪念墓仅持链接的人可见；留言会经过审核。我已阅读《隐私政策》和《用户协议》。</div>
-      </div>
-      <div class="field">
-        <div class="label">逝者姓名或纪念称呼<span class="req">*</span></div>
-        <input id="cname" maxlength="40" placeholder="例如：奶奶、外公、王秀英">
+  <section id="create" class="screen pagebg">
+    <div class="card">
+      <div class="steps"><span class="on"></span><span id="st2"></span></div>
+      <h2>为亲人建一座纪念墓</h2>
+      <div id="c1">
+        <div class="sub">只需填写称呼就能建好。其余资料都可以留空，墓园场景使用默认设置。</div>
+        <div class="field"><label class="label">称呼 / 姓名（必填，不超过 40 字）</label><input id="cname" maxlength="40" placeholder="例如：奶奶、王秀兰"></div>
+        <div class="consent" onclick="toggleConsent()"><div class="box" id="cbox"></div><div>我确认有权发布这些资料（一般为近亲属），了解这座墓仅持有链接的人可见，留言需审核后才公开。已阅读隐私政策和用户协议（待法务审核的占位文本）。</div></div>
         <div class="err" id="cerr"></div>
+        <div class="two"><button class="btn ghost" onclick="go('home')">取消</button><button class="btn grow" onclick="next()">下一步</button></div>
       </div>
-      <div class="muted" style="margin-bottom:18px">只填称呼就可以建立。其余信息都是选填。</div>
-      <button class="btn" onclick="next()">下一步</button>
-    </div>
-    <div id="c2" style="display:none">
-      <div style="font-size:18px;color:var(--accent);margin-bottom:16px" id="cwho"></div>
-      <div class="field"><div class="label">墓园场景<span class="req">*</span></div><div class="chips"><span class="chip on">青山小院</span></div></div>
-      <div class="field"><div class="label">生卒年（选填，可只填一个）</div>
-        <div class="two"><input id="by" inputmode="numeric" maxlength="4" placeholder="生年"><input id="dy" inputmode="numeric" maxlength="4" placeholder="卒年"></div></div>
-      <div class="field"><div class="label">墓志铭（选填，80 字以内）</div><textarea id="ep" maxlength="80" placeholder="想刻在碑上的一句话"></textarea></div>
-      <div class="field"><div class="label">墓碑样式</div><div class="chips" id="styles"></div></div>
-      <div class="err" id="c2err"></div>
-      <div class="two"><button class="btn ghost" onclick="showStep(1)">上一步</button><button class="btn grow" onclick="createTomb()">建立</button></div>
+      <div id="c2" style="display:none">
+        <div class="sub" id="cwho"></div>
+        <div class="opt-title">墓园场景</div><div class="seg"><span class="seg-btn on">青山小院</span></div>
+        <div class="row2" style="margin-top:12px"><div class="field"><label class="label">生年或生日（可留空）</label><input id="by" placeholder="1940 或 1940-03-12"></div>
+          <div class="field"><label class="label">卒年或忌日（可留空）</label><input id="dy" placeholder="2020 或 2020-10-01"></div></div>
+        <div class="field"><label class="label">墓志铭（选填，不超过 80 字）</label><textarea id="ep" maxlength="80"></textarea></div>
+        <div class="opt-title">墓碑样式</div><div class="styles" id="styles"></div>
+        <div class="err" id="c2err"></div>
+        <div class="two"><button class="btn ghost" onclick="showStep(1)">上一步</button><button class="btn grow" onclick="createTomb()">建立</button></div>
+      </div>
     </div>
   </section>
 
-  <!-- 场景 -->
   <section id="tomb" class="screen">
     <canvas id="scene"></canvas>
-    <div class="top"><button class="back" onclick="leaveTomb()">‹</button><span class="pill name" id="tname"></span><span class="pill"><i class="dot"></i><span id="online">1</span> 人在墓前</span></div>
-    <div class="tools"><button class="icon" onclick="openSheet('settings')">设</button><button class="icon" onclick="openSheet('invite')">邀</button></div>
-    <div class="hint" id="hint"></div>
-    <div class="wipetip" id="wipetip">在碑面上来回滑动，可以擦拭墓碑</div>
-    <div class="bar">
-      <button class="act" onclick="openSheet('flower')"><span class="g">花</span>献花</button>
-      <button class="act" onclick="offer('incense')"><span class="g">香</span>上香</button>
-      <button class="act" onclick="offer('candle')"><span class="g">烛</span>点烛</button>
-      <button class="act" onclick="wipeOnce()"><span class="g">拭</span>擦碑</button>
-      <button class="act" id="bowBtn" onclick="toggleBow()"><span class="g">躬</span><span id="bowTxt">鞠躬</span></button>
-      <button class="act" onclick="openSheet('message')"><span class="g">言<span class="badge" id="badge" style="display:none"></span></span>留言</button>
+    <div class="hud-top">
+      <div class="hud-l"><button class="icon-btn" onclick="leaveTomb()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button><span class="presence-chip"><span id="online">1</span>&nbsp;位亲人在</span></div>
+      <div class="hud-r"><button class="icon-btn" onclick="openSheet('settings')">景</button><button class="icon-btn" id="wxBtn" onclick="cycleWeather()">晴</button><button class="icon-btn" onclick="openSheet('invite')">邀</button><button class="icon-btn" id="admBtn" onclick="openSheet('message')">管<span class="badge-dot" id="badge" style="display:none"></span></button></div>
+    </div>
+    <div class="tomb-title"><span class="name-chip strong" id="tname"></span><span class="season-chip" id="tseason"></span><span class="name-chip">我是：来访的亲人</span></div>
+    <div class="action-toast" id="hint"></div>
+    <div class="side-actions"><button class="side-btn" onclick="openSheet('message')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5h14v10H11l-4 3.5v-3.5H5z"/><path d="M8.5 9.5h7M8.5 12.5h4.5"/></svg>留言</button></div>
+    <div class="wipe-panel" id="wipePanel"><div class="r"><strong id="wipeTitle">擦拭墓碑</strong><span id="wipePct">0%</span></div><div class="wipe-bar"><i id="wipeFill"></i></div><div style="margin-top:4px;font-size:11px;color:var(--stone)">在碑面上来回滑动，或点「擦碑」擦一遍</div></div>
+    <div class="ritual-bar">
+      <button class="ritual-btn" onclick="openSheet('flower')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3.2"/><path d="M12 13v7M9 19c2 1 5 1 6 0"/><path d="M12 8l3-4M12 8l-3-4M12 8l4-1M12 8l-4-1"/></svg>献花</button>
+      <button class="ritual-btn" onclick="offer('incense')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20h8M10 20V10M14 20V10"/><path d="M10 9c0-2 1-3 1-5M14 9c.5-2-.5-3 0-5"/></svg>上香</button>
+      <button class="ritual-btn" onclick="offer('candle')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21h6M10 21V11h4v10"/><path d="M12 11c0-2 1.5-3 1.5-4.5S12 5 12 7s-1.6 1.6-1.6 3"/></svg>点烛</button>
+      <button class="ritual-btn" onclick="wipeOnce()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="1"/><path d="M8 9h8M8 13h6"/></svg>擦碑</button>
+      <button class="ritual-btn" id="bowBtn" onclick="toggleBow()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="2"/><path d="M12 8c-1 3 3 4 2 7M9 20c2-2 5-2 7 0M10 13h5"/></svg><span id="bowTxt">鞠躬</span></button>
     </div>
     <div class="mask" id="mask" onclick="closeSheet()"></div>
-    <div class="sheet" id="sheet"><div class="grab"></div><div id="sheetBody"></div></div>
+    <div class="sheet" id="sheet"><div class="close-row"><h3 id="sheetTitle"></h3><button onclick="closeSheet()">关闭</button></div><div id="sheetBody"></div></div>
   </section>
 
-  <div class="dlg" id="dlg"><div class="in">
-    <div style="font-size:19px;text-align:center;color:var(--accent)">纪念墓已建好</div>
-    <div style="font-size:14px">正式版里，管理权限保存在建墓人的手机上，并建议另存一份「管理链接」。邀请亲友：进墓后点右上角「邀」，直接转发给微信好友。</div>
+  <div class="dlg" id="dlg"><div class="card">
+    <h2>纪念墓已建好</h2>
+    <div class="sub">请先把管理链接私下保存（密码本或文件），<span class="warn">不要发到家族群以外</span>。邀请家人请在墓前点「邀」转发。</div>
     <button class="btn" onclick="closeDlg()">进入纪念墓</button>
   </div></div>
   <div class="toast" id="toast"></div>
@@ -190,13 +204,14 @@ try { tombs = JSON.parse(localStorage.getItem(K) || '[]') } catch (e) { tombs = 
 function save() { try { localStorage.setItem(K, JSON.stringify(tombs)) } catch (e) {} }
 
 function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 1800) }
+function togglePanel(k) { const m = $('pMine'), j = $('pJoin'); const show = (el, v) => el.style.display = v ? '' : 'none'; if (k === 'mine') { show(m, m.style.display === 'none'); show(j, false); renderHome() } else { show(j, j.style.display === 'none'); show(m, false) } }
 function go(id) { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); $('phone').scrollTop = 0; window.scrollTo(0, 0); document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('on', s.id === id)); if (id === 'home') renderHome(); if (id === 'create') resetCreate() }
 
 function renderHome() {
   const el = $('myList')
   if (!tombs.length) { el.innerHTML = '<div class="muted">这台设备上还没有纪念墓的记录。</div><div class="link" onclick="go(\'create\')" style="margin-top:6px">现在去建一座 ›</div>'; return }
-  el.innerHTML = tombs.slice().reverse().map((t) => `<div class="row" onclick="openTomb('${t.id}')"><span class="n">${esc(t.name)}</span><span class="tag">我建的</span><span class="muted">›</span></div>`).join('') +
-    '<div class="muted" style="font-size:11px;margin-top:6px">记录只保存在这台设备上。</div>'
+  el.innerHTML = tombs.slice().reverse().map((t) => `<div class="row" onclick="openTomb('${t.id}')"><span class="n">${esc(t.name)}<small>我建的 · 可管理</small></span><span class="muted" style="font-size:20px">›</span></div>`).join('') +
+    '<div class="muted" style="margin-top:8px">记录只保存在这台设备上。</div>'
 }
 function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])) }
 
@@ -205,22 +220,24 @@ let consent = false, stele = 'qingshi'
 const STYLES = [['qingshi', '青石立碑'], ['wubei', '卧碑'], ['yuanshou', '圆首碑']]
 function resetCreate() { consent = false; $('cbox').className = 'box'; $('cbox').textContent = ''; $('cname').value = ''; $('cerr').textContent = ''; $('by').value = ''; $('dy').value = ''; $('ep').value = ''; stele = 'qingshi'; renderStyles(); showStep(1) }
 function toggleConsent() { consent = !consent; $('cbox').className = 'box' + (consent ? ' on' : ''); $('cbox').textContent = consent ? '✓' : '' }
-function renderStyles() { $('styles').innerHTML = STYLES.map(([id, n]) => `<span class="chip ${id === stele ? 'on' : ''}" onclick="stele='${id}';renderStyles()">${n}</span>`).join('') }
-function showStep(n) { $('c1').style.display = n === 1 ? '' : 'none'; $('c2').style.display = n === 2 ? '' : 'none' }
+const STYLE_DESC = { qingshi: '直立青石，顶沿微收，中央一道几何远山纹。', wubei: '横向卧石，低矮开阔，两侧浅刻回纹。', yuanshou: '圆拱碑首，碑额一枚简化松针纹。' }
+function renderStyles() { $('styles').innerHTML = STYLES.map(([id, n]) => `<div class="style-opt ${id === stele ? 'picked' : ''}" onclick="stele='${id}';renderStyles()"><strong>${n}</strong><small>${STYLE_DESC[id]}</small></div>`).join('') }
+function showStep(n) { $('c1').style.display = n === 1 ? '' : 'none'; $('c2').style.display = n === 2 ? '' : 'none'; $('st2').className = n === 2 ? 'on' : '' }
 function containsContact(t) { return /1[3-9]\d{9}/.test(t) || /\d{17}[\dXx]/.test(t) || /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(t) }
 function next() {
   const n = $('cname').value.trim()
-  if (!consent) return ($('cerr').textContent = '请先阅读并勾选上方说明')
+  if (!consent) return ($('cerr').textContent = '请先阅读并勾选上方确认')
   if (!n) return ($('cerr').textContent = '请填写逝者姓名或纪念称呼')
   if (containsContact(n)) return ($('cerr').textContent = '称呼中请不要填写联系方式或证件号码')
-  $('cwho').textContent = `为「${n}」建一座纪念墓`
+  $('cwho').textContent = `为「${n}」补充资料。都可以留空，直接点「建立」。`
   showStep(2)
 }
 function createTomb() {
   const y = new Date().getFullYear()
   const b = $('by').value.trim(), d = $('dy').value.trim()
-  for (const [v, l] of [[b, '生年'], [d, '卒年']]) if (v && (!/^\d{4}$/.test(v) || +v < 1800 || +v > y)) return ($('c2err').textContent = `${l}不在合理范围内`)
-  if (b && d && +d < +b) return ($('c2err').textContent = '卒年不能早于生年')
+  const ok = (v) => /^\d{4}(-\d{2}(-\d{2})?)?$/.test(v)
+  for (const [v, l] of [[b, '生年或生日'], [d, '卒年或忌日']]) if (v && (!ok(v) || +v.slice(0, 4) < 1800 || +v.slice(0, 4) > y)) return ($('c2err').textContent = `${l}请填写如 1940 或 1940-03-12`)
+  if (b && d && d < b) return ($('c2err').textContent = '离世日期不能早于出生日期')
   const t = { id: 'tmb_' + Math.random().toString(36).slice(2, 10), name: $('cname').value.trim(), birth: b, death: d, epitaph: $('ep').value.trim(), style: stele, offerings: [], ins: [], wipe: 0 }
   tombs.push(t); save()
   pendingOpen = t.id
@@ -241,7 +258,8 @@ function phase() { if (env.tod === 'day') return 'noon'; if (env.tod === 'night'
 function startTomb() {
   go('tomb')
   $('tname').textContent = cur.name
-  $('wipetip').style.opacity = 1
+  $('admBtn').style.display = cur.sample ? 'none' : ''
+  $('wxBtn').textContent = { clear: '晴', cloudy: '阴', rain: '雨' }[env.weather]
   const c = $('scene'), r = c.getBoundingClientRect()
   const pr = Math.min(2, window.devicePixelRatio || 1)
   c.width = r.width * pr; c.height = r.height * pr
@@ -257,7 +275,12 @@ function startTomb() {
   clearInterval(sim); sim = setInterval(simulate, 9000); setTimeout(simulate, 4000)
   simState = 0
 }
-function applyEnv() { scene.setEnv({ season: season(), phase: phase(), weather: env.weather, quality: env.quality }) }
+const SEASON_LABEL = { spring: '春日花开', summer: '夏日林荫', autumn: '秋日落叶', winter: '冬日飘雪' }
+const PHASE_LABEL = { dawn: '晨', noon: '午', dusk: '黄昏', night: '夜' }
+function applyEnv() { scene.setEnv({ season: season(), phase: phase(), weather: env.weather, quality: env.quality }); $('tseason').textContent = SEASON_LABEL[season()] + ' · ' + PHASE_LABEL[phase()]; $('wxBtn').textContent = { clear: '晴', cloudy: '阴', rain: '雨' }[env.weather] }
+function cycleWeather() { const o = ['clear', 'cloudy', 'rain']; env.weather = o[(o.indexOf(env.weather) + 1) % 3]; applyEnv(); toast('天气：' + { clear: '晴', cloudy: '阴', rain: '细雨' }[env.weather]) }
+let wipeHide = 0
+function showWipe() { const pct = Math.round((1 - scene.dustAmount()) * 100); $('wipePct').textContent = pct + '%'; $('wipeFill').style.width = pct + '%'; $('wipeTitle').textContent = pct >= 100 ? '墓碑已擦拭干净' : '擦拭墓碑'; $('wipePanel').classList.add('show'); clearTimeout(wipeHide); wipeHide = setTimeout(() => $('wipePanel').classList.remove('show'), 2600) }
 function refresh() { scene.setOfferings(cur.offerings) }
 function leaveTomb() { cancelAnimationFrame(raf); clearInterval(sim); closeSheet(); if (!cur.sample) save(); go('home') }
 setInterval(() => { if (scene && cur) { refresh(); flushWipe() } if (hintUntil && Date.now() > hintUntil) { $('hint').classList.remove('show'); hintUntil = 0 } }, 700)
@@ -271,7 +294,7 @@ function addOffering(type, subtype, who) {
   refresh(); if (!cur.sample) save()
 }
 function offer(type, sub) { addOffering(type, sub, 'me') }
-function wipeOnce() { scene.sweep(); setWipe(Math.min(1, (cur.wipe || 0) + 0.35)) }
+function wipeOnce() { scene.sweep(); setWipe(Math.min(1, (cur.wipe || 0) + 0.35)); showWipe() }
 function setWipe(v) { cur.wipe = v; scene.setWipeLevel(v); if (!cur.sample) save() }
 function flushWipe() { const inc = scene.consumeWipe(); if (inc > 0.004) { cur.wipe = Math.min(1, (cur.wipe || 0) + inc); if (!cur.sample) save() } }
 function setBow(on) { $('bowBtn').classList.toggle('on', on); $('bowTxt').textContent = on ? '停下' : '鞠躬' }
@@ -282,8 +305,8 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && sce
 let wiping = false
 const cv = $('scene')
 function pt(e) { const r = cv.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top } }
-function down(e) { const p = pt(e); wiping = scene && scene.isOnStele(p.x, p.y); if (wiping) { $('wipetip').style.opacity = 0; e.preventDefault() } }
-function move(e) { if (!wiping) return; const p = pt(e); scene.wipeAt(p.x, p.y); e.preventDefault() }
+function down(e) { const p = pt(e); wiping = scene && scene.isOnStele(p.x, p.y); if (wiping) { showWipe(); e.preventDefault() } }
+function move(e) { if (!wiping) return; const p = pt(e); scene.wipeAt(p.x, p.y); showWipe(); e.preventDefault() }
 function up() { wiping = false; if (scene) flushWipe() }
 cv.addEventListener('touchstart', down, { passive: false }); cv.addEventListener('touchmove', move, { passive: false }); cv.addEventListener('touchend', up)
 cv.addEventListener('mousedown', down); cv.addEventListener('mousemove', (e) => { if (e.buttons) move(e) }); window.addEventListener('mouseup', up)
@@ -314,25 +337,26 @@ function simulate() {
 }
 
 // ---------- 抽屉 ----------
+const SHEET_TITLE = { flower: '献一束花', message: '留言', settings: '景 · 场景', invite: '邀请家人' }
 function openSheet(kind) {
   const b = $('sheetBody')
-  if (kind === 'flower') b.innerHTML = `<div class="st">献一束花</div><div class="flowers">${[['baiju', '白菊'], ['huangju', '黄菊'], ['cuibai', '翠柏']].map(([id, n]) => `<div class="flower" onclick="closeSheet();offer('flower','${id}')"><div class="fd f-${id}"></div>${n}</div>`).join('')}</div><div class="muted" style="text-align:center">基础鲜花免费，花会在碑前留 30 天。</div>`
+  $('sheetTitle').textContent = SHEET_TITLE[kind]
+  if (kind === 'flower') b.innerHTML = `<div class="flower-grid">${[['baiju', '白菊'], ['huangju', '黄菊'], ['cuibai', '翠柏']].map(([id, n]) => `<div class="flower-opt" onclick="closeSheet();offer('flower','${id}')"><div class="fd f-${id}"></div>${n}</div>`).join('')}</div><div class="muted" style="text-align:center">基础鲜花免费，花会在碑前留 30 天。</div>`
   if (kind === 'message') renderMessages()
   if (kind === 'settings') renderSettings()
-  if (kind === 'invite') b.innerHTML = `<div class="st">邀请亲友</div><div class="muted" style="text-align:center;margin-bottom:14px">只有收到邀请的人能进入这座墓。正式版直接转发给微信好友或群，分享卡片标题为「来为${esc(cur.name)}扫扫墓」。</div><button class="btn" onclick="toast('演示版不发送；小程序里会打开微信转发')">转发给微信好友或群</button>`
+  if (kind === 'invite') b.innerHTML = `<div class="sub">只有收到邀请的人能进入这座墓。小程序里直接转发给微信好友或群，卡片标题为「来为${esc(cur.name)}扫扫墓」。</div><button class="btn" onclick="toast('演示版不发送；小程序里会打开微信转发')">转发给微信好友或群</button>`
   $('mask').classList.add('on'); $('sheet').classList.add('open')
-  $('sheet').dataset.kind = kind
 }
 function closeSheet() { $('mask').classList.remove('on'); $('sheet').classList.remove('open') }
 let asCreator = true
 function renderMessages() {
   const list = cur.ins.slice().reverse()
-  $('sheetBody').innerHTML = `<div class="st">留言</div>
-    <div class="chips" style="justify-content:center;margin-bottom:8px"><span class="chip ${asCreator ? 'on' : ''}" onclick="asCreator=true;renderMessages()">我是建墓人</span><span class="chip ${!asCreator ? 'on' : ''}" onclick="asCreator=false;renderMessages()">看看亲友视角</span></div>
-    <div style="max-height:34vh;overflow-y:auto">${list.filter((x) => x.status === 'approved' || asCreator || x.mine).map((x) => `
-      <div class="ins"><div class="b">${esc(x.body)}</div><div class="m">${esc(x.name)}${x.status === 'pending' ? '<span class="t2">审核中</span>' : ''}</div>
-      ${asCreator && x.status === 'pending' ? `<button class="mb ok" onclick="mod('${x.id}','approved')">通过</button><button class="mb" onclick="mod('${x.id}','rejected')">不通过</button>` : ''}</div>`).join('') || '<div class="muted" style="text-align:center;padding:20px">还没有留言。</div>'}</div>
-    <textarea id="draft" maxlength="140" placeholder="写下想说的话（140 字以内，审核通过后亲友可见）" style="margin:10px 0"></textarea>
+  const creator = !cur.sample && asCreator
+  $('sheetBody').innerHTML = (cur.sample ? '' : `<div class="seg" style="margin-bottom:8px"><span class="seg-btn ${asCreator ? 'on' : ''}" onclick="asCreator=true;renderMessages()">我是建墓人</span><span class="seg-btn ${!asCreator ? 'on' : ''}" onclick="asCreator=false;renderMessages()">看看亲友视角</span></div>`) +
+    `<ul class="msg-list">${list.filter((x) => x.status === 'approved' || creator || x.mine).map((x) => `
+      <li><div class="meta">${esc(x.name)}${x.status === 'pending' ? '<span class="badge wait">审核中</span>' : ''}</div>${esc(x.body)}
+      ${creator && x.status === 'pending' ? `<div><button class="mb ok" onclick="mod('${x.id}','approved')">通过</button><button class="mb" onclick="mod('${x.id}','rejected')">不通过</button></div>` : ''}</li>`).join('') || '<li class="muted" style="text-align:center">还没有留言。</li>'}</ul>
+    <textarea id="draft" maxlength="140" placeholder="写下想说的话（140 字以内，审核通过后亲友可见）" style="margin-bottom:10px"></textarea>
     <button class="btn" onclick="postMsg()">留下</button>`
 }
 function postMsg() {
@@ -343,10 +367,10 @@ function postMsg() {
   if (!cur.sample) save(); renderMessages(); updateBadge(); toast('已提交，审核通过后亲友可见')
 }
 function mod(id, st) { const x = cur.ins.find((i) => i.id === id); if (x) x.status = st; if (st === 'rejected') cur.ins = cur.ins.filter((i) => i.id !== id); if (!cur.sample) save(); renderMessages(); updateBadge() }
-function updateBadge() { const n = cur.ins.filter((x) => x.status === 'pending').length; $('badge').style.display = n ? 'flex' : 'none'; $('badge').textContent = n }
+function updateBadge() { const n = cur.sample ? 0 : cur.ins.filter((x) => x.status === 'pending').length; $('badge').style.display = n ? 'flex' : 'none'; $('badge').textContent = n; $('admBtn').classList.toggle('on', n > 0) }
 function renderSettings() {
-  const row = (label, key, opts) => `<div class="field"><div class="label">${label}</div><div class="chips">${opts.map(([v, n]) => `<span class="chip ${env[key] === v ? 'on' : ''}" onclick="setEnv('${key}','${v}')">${n}</span>`).join('')}</div></div>`
-  $('sheetBody').innerHTML = `<div class="st">场景（只改变你自己的画面）</div>` +
+  const row = (label, key, opts) => `<div class="opt-title">${label}</div><div class="seg">${opts.map(([v, n]) => `<span class="seg-btn ${env[key] === v ? 'on' : ''}" onclick="setEnv('${key}','${v}')">${n}</span>`).join('')}</div>`
+  $('sheetBody').innerHTML = `<div class="sub" style="margin:0">只改变你自己的画面。</div>` +
     row('季节', 'season', [['', '跟随墓园'], ['spring', '春日花开'], ['summer', '夏日林荫'], ['autumn', '秋日落叶'], ['winter', '冬日飘雪']]) +
     row('昼夜', 'tod', [['auto', '跟随本地时间'], ['day', '白昼'], ['night', '夜晚']]) +
     row('天气', 'weather', [['clear', '晴'], ['cloudy', '阴'], ['rain', '细雨']]) +

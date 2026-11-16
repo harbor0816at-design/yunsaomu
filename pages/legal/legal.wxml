@@ -1,4 +1,4 @@
-<view class="wrap">
+<view class="page-bg wrap">
   <view class="t">{{doc.title}}</view>
   <view wx:for="{{doc.sections}}" wx:key="index" class="sec">
     <view class="h">{{item[0]}}</view>

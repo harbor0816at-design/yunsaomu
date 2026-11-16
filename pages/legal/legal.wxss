@@ -1,5 +1,5 @@
-.wrap { padding: 40rpx 40rpx 80rpx; }
-.t { font-size: 38rpx; margin-bottom: 32rpx; color: var(--accent); }
+.wrap { padding: 40rpx 32rpx 80rpx; }
+.t { font-family: var(--serif); font-size: 40rpx; font-weight: 700; margin-bottom: 32rpx; color: var(--ink); }
 .sec { margin-bottom: 32rpx; }
-.h { font-size: 30rpx; margin-bottom: 8rpx; }
-.p { font-size: 28rpx; color: var(--dim); line-height: 1.8; }
+.h { font-family: var(--serif); font-size: 32rpx; margin-bottom: 8rpx; }
+.p { font-size: 28rpx; color: var(--ink-soft); line-height: 1.8; }

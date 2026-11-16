@@ -2,19 +2,20 @@
 // 不依赖 DOM / 小程序 API：传入 2D context 即可绘制，可在 node 里用 mock context 跑通。
 const { mix, mixHex, rgba, hashStr, rng } = require('./color')
 
+// 色调对齐网页版：雾青、低饱和、带空气透视
 const PHASE = {
-  dawn: { skyTop: '#7e8fb3', skyBot: '#f3caa2', light: 0.82, glow: 0.55 },
-  noon: { skyTop: '#79abd6', skyBot: '#dbeaf1', light: 1, glow: 0.3 },
-  dusk: { skyTop: '#4a4f7a', skyBot: '#e9a37b', light: 0.66, glow: 0.75 },
-  night: { skyTop: '#0a1124', skyBot: '#24304b', light: 0.34, glow: 1 }
+  dawn: { skyTop: '#a9b2b6', skyBot: '#e3d6c2', light: 0.86, glow: 0.55 },
+  noon: { skyTop: '#b3bcb2', skyBot: '#dcdfd2', light: 1, glow: 0.3 },
+  dusk: { skyTop: '#858892', skyBot: '#d8b996', light: 0.7, glow: 0.75 },
+  night: { skyTop: '#161b23', skyBot: '#353d47', light: 0.36, glow: 1 }
 }
-const NIGHT_TINT = '#0c1323'
+const NIGHT_TINT = '#151a21'
 
 const SEASON = {
-  spring: { ground: '#86a86e', grass: '#9cbf7f', hillFar: '#93ab9a', hillNear: '#6f927b', leaf: ['#f3c6d0', '#eaa9b9', '#f8dfe4', '#e7b3c3'], trunk: '#5d4838', deco: ['#f6e0e6', '#fff3b8', '#e9b4c4'] },
-  summer: { ground: '#5f8f4f', grass: '#6fa25a', hillFar: '#76a07f', hillNear: '#4d7a58', leaf: ['#3d7845', '#4c8a51', '#2f6a3b', '#5b9a5a'], trunk: '#4f3c2e', deco: ['#9fcf7a', '#f2e3a0'] },
-  autumn: { ground: '#a4905a', grass: '#b39f63', hillFar: '#ab9873', hillNear: '#8b7a57', leaf: ['#dc8b3a', '#c56a2c', '#e9b24c', '#b8552a'], trunk: '#5a4232', deco: ['#d07a33', '#e5aa45', '#a9542a'] },
-  winter: { ground: '#e7ecef', grass: '#dfe6ea', hillFar: '#c5ced6', hillNear: '#a7b3bd', leaf: null, trunk: '#4e4038', deco: ['#ffffff', '#d5dee5'] }
+  spring: { ground: '#8a9876', grass: '#9ba886', hillFar: '#aab4a6', hillNear: '#8f9d8b', leaf: ['#e3c9cd', '#d8b6bd', '#eddcdd', '#d6bac2'], trunk: '#5e5246', deco: ['#eee5e1', '#e6dfb9', '#d6b8bf'] },
+  summer: { ground: '#6e7e5f', grass: '#7e8e6b', hillFar: '#97a395', hillNear: '#758672', leaf: ['#5c7152', '#697e5c', '#4e6347', '#778b65'], trunk: '#4f463c', deco: ['#93a67a', '#d9d2a4'] },
+  autumn: { ground: '#7c7051', grass: '#897c5b', hillFar: '#a79f88', hillNear: '#8d846a', leaf: ['#b78a52', '#9f7041', '#c8a364', '#8e6a45'], trunk: '#584a3c', deco: ['#9f733f', '#bd995b', '#7c5a3a'] },
+  winter: { ground: '#dde0dc', grass: '#d5d9d5', hillFar: '#c1c8c6', hillNear: '#aab3b1', leaf: null, trunk: '#4e443c', deco: ['#f4f5f3', '#cfd6d6'] }
 }
 
 const FLOWER_COLORS = {
@@ -135,7 +136,7 @@ class Scene {
       const dy = c.cy - y
       const dist = Math.sqrt(dx * dx + dy * dy)
       if (dist > r) continue
-      const k = 0.22 * (1 - dist / r)
+      const k = 0.34 * (1 - dist / r)
       const nd = Math.max(0, c.d - k)
       removed += c.d - nd
       c.d = nd
@@ -259,6 +260,7 @@ class Scene {
     this.drawHills(S, shade)
     this.drawGround(S, shade)
     this.trees.filter((tr) => !tr.front).forEach((tr) => this.drawTree(tr, S, shade))
+    this.drawHaze(P, grey)
     this.drawPath(shade)
     this.drawStele(shade, P)
     this.drawDust(now)
@@ -368,6 +370,21 @@ class Scene {
     }
   }
 
+  // 空气透视：地平线附近一层雾，越远越淡
+  drawHaze(P, grey) {
+    const ctx = this.ctx
+    const fog = grey ? mixHex(P.skyBot, '#b9bec4', 0.6) : P.skyBot
+    const top = this.horizon - this.h * 0.08
+    const bot = this.horizon + this.h * 0.16
+    const g = ctx.createLinearGradient(0, top, 0, bot)
+    const a = this.phase === 'night' ? 0.35 : 0.62
+    g.addColorStop(0, rgba(fog, 0))
+    g.addColorStop(0.45, rgba(fog, a))
+    g.addColorStop(1, rgba(fog, 0))
+    ctx.fillStyle = g
+    ctx.fillRect(-this.w * 0.1, top, this.w * 1.2, bot - top)
+  }
+
   poly(pts, bottom, fill) {
     const ctx = this.ctx
     ctx.fillStyle = fill
@@ -403,7 +420,7 @@ class Scene {
   drawPath(shade) {
     const ctx = this.ctx
     const cx = this.w / 2
-    ctx.fillStyle = shade('#b7b2a4')
+    ctx.fillStyle = shade('#b4b0a4')
     ctx.beginPath()
     ctx.moveTo(cx - this.w * 0.09, this.baseY + this.h * 0.02)
     ctx.lineTo(cx + this.w * 0.09, this.baseY + this.h * 0.02)
@@ -411,7 +428,7 @@ class Scene {
     ctx.lineTo(cx - this.w * 0.26, this.h + 10)
     ctx.closePath()
     ctx.fill()
-    ctx.strokeStyle = shade('#9a9587')
+    ctx.strokeStyle = shade('#99958a')
     ctx.lineWidth = 1
     for (let i = 1; i < 6; i++) {
       const y = this.baseY + this.h * 0.02 + i * (this.h - this.baseY) / 6
@@ -420,9 +437,9 @@ class Scene {
     }
     // 底座平台
     const s = this.stele
-    ctx.fillStyle = shade('#8d8a80')
+    ctx.fillStyle = shade('#8a877c')
     ctx.fillRect(s.x - s.w * 0.22, this.baseY - 2, s.w * 1.44, this.h * 0.028)
-    ctx.fillStyle = shade('#a4a196')
+    ctx.fillStyle = shade('#b8b4a8')
     ctx.fillRect(s.x - s.w * 0.22, this.baseY - 2, s.w * 1.44, this.h * 0.008)
   }
 
@@ -462,9 +479,9 @@ class Scene {
     ctx.ellipse ? ctx.ellipse(s.cx + s.w * 0.1, this.baseY + 2, s.w * 0.7, s.h * 0.05, 0, 0, Math.PI * 2) : ctx.rect(s.x, this.baseY, s.w, 4)
     ctx.fill()
     const g = ctx.createLinearGradient(s.x, 0, s.x + s.w, 0)
-    g.addColorStop(0, shade('#7e877f'))
-    g.addColorStop(0.45, shade('#99a198'))
-    g.addColorStop(1, shade('#636b63'))
+    g.addColorStop(0, shade('#7f7c72'))
+    g.addColorStop(0.45, shade('#a7a397'))
+    g.addColorStop(1, shade('#68655c'))
     ctx.fillStyle = g
     this.steleShape()
     ctx.fill()
@@ -474,10 +491,51 @@ class Scene {
     }
     // 碑面内框
     const f = this.face
-    ctx.strokeStyle = shade('#5a625b')
+    ctx.strokeStyle = shade('#5f5c53')
     ctx.lineWidth = 1
     ctx.strokeRect(f.x - 3, f.y - 3, f.w + 6, f.h + 6)
+    this.drawMotif(shade)
     this.drawInscription(shade, P)
+  }
+
+  // 碑饰（网页版描述）：青石立碑—远山纹；卧碑—两侧回纹；圆首碑—碑额松针纹
+  drawMotif(shade) {
+    const ctx = this.ctx
+    const s = this.stele
+    const f = this.face
+    ctx.strokeStyle = shade('#5f5c53')
+    ctx.lineWidth = 1.2
+    ctx.beginPath()
+    if (this.tomb.style === 'yuanshou') {
+      const cx = s.cx
+      const cy = s.y + (f.y - s.y) * 0.55
+      const r = s.w * 0.12
+      for (let i = -3; i <= 3; i++) {
+        const a = -Math.PI / 2 + i * 0.32
+        ctx.moveTo(cx, cy + r * 0.6)
+        ctx.lineTo(cx + Math.cos(a) * r, cy + r * 0.6 + Math.sin(a) * r)
+      }
+    } else if (this.tomb.style === 'wubei') {
+      const sz = Math.min(10, f.h * 0.14)
+      ;[f.x - sz * 1.6, f.x + f.w + sz * 0.6].forEach((x) => {
+        for (let k = 0; k < 2; k++) {
+          const y = f.y + f.h * 0.25 + k * sz * 1.6
+          ctx.rect(x, y, sz, sz)
+          ctx.moveTo(x + sz * 0.3, y + sz * 0.3); ctx.lineTo(x + sz * 0.7, y + sz * 0.3); ctx.lineTo(x + sz * 0.7, y + sz * 0.7)
+        }
+      })
+    } else {
+      const y = s.y + (f.y - s.y) * 0.62
+      const w = s.w * 0.5
+      const x0 = s.cx - w / 2
+      ctx.moveTo(x0, y)
+      ctx.lineTo(x0 + w * 0.22, y - w * 0.14)
+      ctx.lineTo(x0 + w * 0.38, y - w * 0.04)
+      ctx.lineTo(x0 + w * 0.55, y - w * 0.2)
+      ctx.lineTo(x0 + w * 0.75, y - w * 0.05)
+      ctx.lineTo(x0 + w, y)
+    }
+    ctx.stroke()
   }
 
   vText(text, x, y, fs, maxH) {

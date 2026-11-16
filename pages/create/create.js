@@ -3,9 +3,9 @@ const store = require('../../utils/store')
 const v = require('../../utils/validate')
 
 const STYLES = [
-  { id: 'qingshi', name: '青石立碑' },
-  { id: 'wubei', name: '卧碑' },
-  { id: 'yuanshou', name: '圆首碑' }
+  { id: 'qingshi', name: '青石立碑', desc: '直立青石，顶沿微收，中央一道几何远山纹。' },
+  { id: 'wubei', name: '卧碑', desc: '横向卧石，低矮开阔，两侧浅刻回纹。' },
+  { id: 'yuanshou', name: '圆首碑', desc: '圆拱碑首，碑额一枚简化松针纹。' }
 ]
 const SCENES = [{ id: 'default', name: '青山小院' }]
 const PRECISIONS = [
@@ -78,7 +78,7 @@ Page({
   goLegal(e) { wx.navigateTo({ url: `/pages/legal/legal?doc=${e.currentTarget.dataset.doc}` }) },
 
   next() {
-    if (!this.data.consent) { this.setData({ nameErr: '请先阅读并勾选上方说明' }); return }
+    if (!this.data.consent) { this.setData({ nameErr: '请先阅读并勾选上方确认' }); return }
     const err = v.validateName(this.data.name)
     if (err) { this.setData({ nameErr: err }); return }
     this.setData({ step: 2 })
