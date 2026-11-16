@@ -163,6 +163,7 @@ Page({
             seed: this.tombId,
             createCanvas: (w, h) => wx.createOffscreenCanvas({ type: '2d', width: w, height: h }),
             onBowEnd: () => this.setData({ bowing: false }),
+            onMove: (p) => this.sendPos(p),
             onQuality: (q) => {
               this.setData({ 'env.quality': q })
               this.applyPixelRatio()
@@ -170,6 +171,7 @@ Page({
             }
           })
           this.ctxReady = true
+          this.posTimer = setInterval(() => { if (this.scene && this.scene.me) this.sendPos({ x: this.scene.me.x, z: this.scene.me.z }) }, 15000)
           this.pushScene()
           this.loop()
         } catch (e) {
@@ -266,6 +268,11 @@ Page({
     this.rt = new Realtime(this.tombId, this.sessionId, {
       onStatus: (s) => this.setData({ live: s === 'online' }),
       onServer: (msg) => this.onServer(msg),
+      onPeer: (msg) => {
+        if (msg.kind === 'pos' && msg.sessionId && msg.sessionId !== this.sessionId && this.scene && this.scene.peerMove) {
+          this.scene.peerMove(msg.sessionId, Number(msg.x), Number(msg.z))
+        }
+      },
       onPresence: (list) => {
         const others = list.filter((p) => p.key !== this.sessionId)
         this.setData({ online: Math.max(1, others.length + 1) })
@@ -304,6 +311,12 @@ Page({
     }
   },
 
+  // 只广播坐标，不带任何个人信息
+  sendPos(p) {
+    if (!this.rt) return
+    this.rt.broadcast({ kind: 'pos', sessionId: this.sessionId, x: +Number(p.x).toFixed(2), z: +Number(p.z).toFixed(2) })
+  },
+
   showHint(kind) {
     const text = this.hints.push(kind, Date.now())
     if (!text) return
@@ -330,16 +343,18 @@ Page({
   onTouchStart(e) {
     const ts = e.touches || []
     if (!this.scene || !ts.length) return
+    if (this.data.gestureTip) this.setData({ gestureTip: false })
     if (ts.length >= 2 && this.is3D) {
       this.wiping = false
+      this.tapCandidate = null
       this.pinch = Math.hypot(ts[0].x - ts[1].x, ts[0].y - ts[1].y)
       return
     }
     const t = ts[0]
     this.wiping = this.scene.isOnStele(t.x, t.y)
     this.lastTouch = { x: t.x, y: t.y }
+    this.tapCandidate = this.wiping ? null : { x: t.x, y: t.y, at: Date.now() }
     if (this.wiping) this.showWipe()
-    if (this.data.gestureTip) this.setData({ gestureTip: false })
   },
   onTouchMove(e) {
     const ts = e.touches || []
@@ -357,10 +372,11 @@ Page({
       if (pct !== this.data.wipePct) this.setData({ wipePct: pct })
       return
     }
-    if (this.is3D && this.lastTouch) {
+    if (this.tapCandidate && Math.hypot(t.x - this.tapCandidate.x, t.y - this.tapCandidate.y) > 8) this.tapCandidate = null
+    if (this.is3D && this.lastTouch && !this.tapCandidate) {
       this.scene.dragBy(t.x - this.lastTouch.x, t.y - this.lastTouch.y)
-      this.lastTouch = { x: t.x, y: t.y }
     }
+    this.lastTouch = { x: t.x, y: t.y }
   },
   showWipe() {
     clearTimeout(this.wipeHide)
@@ -370,6 +386,12 @@ Page({
   },
   onTouchEnd(e) {
     if (this.wiping) this.showWipe()
+    // 轻点地面：走过去
+    const tc = this.tapCandidate
+    if (tc && this.is3D && Date.now() - tc.at < 350 && this.scene.tap) {
+      if (this.scene.tap(tc.x, tc.y) && this.data.bowing) this.setData({ bowing: false })
+    }
+    this.tapCandidate = null
     this.wiping = false
     this.pinch = 0
     this.lastTouch = null
@@ -539,6 +561,7 @@ Page({
   onUnload() {
     this.stopped = true
     this.stopTimers()
+    clearInterval(this.posTimer)
     if (this.rt) this.rt.close()
     if (this.tombId && this.auth && this.data.status === 'ready') api.leave(this.tombId, this.auth, this.sessionId).catch(() => {})
   }

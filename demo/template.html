@@ -169,7 +169,7 @@ textarea{min-height:84px;resize:none}
   </section>
 
   <section id="tomb" class="screen">
-    <canvas id="scene"></canvas><div class="vignette"></div><div class="gesture-tip" id="gtip">拖动环视 · 双指或滚轮缩放 · 在碑面上滑动擦拭</div>
+    <canvas id="scene"></canvas><div class="vignette"></div><div class="gesture-tip" id="gtip">轻点地面走过去 · 拖动环视 · 在碑面上滑动擦拭</div>
     <div class="hud-top">
       <div class="hud-l"><button class="icon-btn" onclick="leaveTomb()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button><span class="presence-chip"><span id="online">1</span>&nbsp;位亲人在</span></div>
       <div class="hud-r"><button class="icon-btn" onclick="openSheet('settings')">景</button><button class="icon-btn" id="wxBtn" onclick="cycleWeather()">晴</button><button class="icon-btn" onclick="openSheet('invite')">邀</button><button class="icon-btn" id="admBtn" onclick="openSheet('message')">管<span class="badge-dot" id="badge" style="display:none"></span></button></div>
@@ -324,25 +324,33 @@ const cv = $('scene')
 function pt(e) { const r = cv.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top } }
 let lastPt = null, pinch = 0
 function tdist(e) { const a = e.touches[0], b = e.touches[1]; return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) }
+let tapC = null
 function down(e) {
   if (!scene) return
   $('gtip').style.opacity = 0
-  if (e.touches && e.touches.length >= 2 && is3D) { wiping = false; pinch = tdist(e); e.preventDefault(); return }
+  if (e.touches && e.touches.length >= 2 && is3D) { wiping = false; tapC = null; pinch = tdist(e); e.preventDefault(); return }
   const p = pt(e); wiping = scene.isOnStele(p.x, p.y); lastPt = p
+  tapC = wiping ? null : { x: p.x, y: p.y, at: Date.now() }
   if (wiping) showWipe()
   e.preventDefault()
 }
 function move(e) {
-  if (!scene) return
+  if (!scene || (!lastPt && !wiping)) return
   if (e.touches && e.touches.length >= 2 && is3D) { const d = tdist(e); if (pinch) scene.zoomBy(pinch / Math.max(1, d)); pinch = d; e.preventDefault(); return }
   const p = pt(e)
-  if (wiping) { scene.wipeAt(p.x, p.y); showWipe() } else if (is3D && lastPt) { scene.dragBy(p.x - lastPt.x, p.y - lastPt.y); lastPt = p }
+  if (wiping) { scene.wipeAt(p.x, p.y); showWipe(); e.preventDefault(); return }
+  if (tapC && Math.hypot(p.x - tapC.x, p.y - tapC.y) > 8) tapC = null
+  if (is3D && lastPt && !tapC) scene.dragBy(p.x - lastPt.x, p.y - lastPt.y)
+  lastPt = p
   e.preventDefault()
 }
-function up() { wiping = false; lastPt = null; pinch = 0; if (scene) flushWipe() }
+function up() {
+  if (tapC && is3D && Date.now() - tapC.at < 350 && scene.tap) { if (scene.tap(tapC.x, tapC.y)) setBow(false) }
+  tapC = null; wiping = false; lastPt = null; pinch = 0; if (scene) flushWipe()
+}
 cv.addEventListener('wheel', (e) => { if (is3D && scene) { scene.zoomBy(1 + e.deltaY * 0.0012); e.preventDefault() } }, { passive: false })
 cv.addEventListener('touchstart', down, { passive: false }); cv.addEventListener('touchmove', move, { passive: false }); cv.addEventListener('touchend', up)
-cv.addEventListener('mousedown', down); cv.addEventListener('mousemove', (e) => { if (e.buttons) move(e) }); window.addEventListener('mouseup', up)
+cv.addEventListener('mousedown', down); cv.addEventListener('mousemove', (e) => { if (e.buttons) move(e) }); window.addEventListener('mouseup', (e) => { if (lastPt || wiping) up() })
 
 // 他人动作短提示（本地模拟亲友到访）
 const VERB = { flower: '献上了一束花', incense: '上了一炷香', candle: '点亮了一支烛', wipe: '擦拭了墓碑', bow: '在墓前鞠躬' }
@@ -358,13 +366,15 @@ function hint(kind) {
 let simState = 0
 function simulate() {
   if (!scene) return
+  const peersNow = (n) => Array.from({ length: n }, (_, i) => ({ key: 'p' + (i + 1) }))
   const steps = [
-    () => { $('online').textContent = 2; scene.setPeers([{ key: 'p1' }]) },
+    () => { $('online').textContent = 2; scene.setPeers(peersNow(1)) },
     () => { addOffering('flower', 'huangju', 'p1'); hint('flower') },
     () => { addOffering('incense', null, 'p1'); hint('incense'); setTimeout(() => { scene.peerBow('p1'); hint('bow') }, 1800) },
-    () => { $('online').textContent = 3; scene.setPeers([{ key: 'p1' }, { key: 'p2' }]); addOffering('candle', null, 'p2'); hint('candle') },
-    () => { setWipe(Math.min(1, (cur.wipe || 0) + 0.2)); hint('wipe') },
-    () => { $('online').textContent = 2; scene.setPeers([{ key: 'p2' }]) }
+    () => { $('online').textContent = 4; scene.setPeers(peersNow(3)); setTimeout(() => { addOffering('candle', null, 'p2'); hint('candle') }, 4000) },
+    () => { if (scene.peerMove) scene.peerMove('p1', -0.6, 3.2); setWipe(Math.min(1, (cur.wipe || 0) + 0.2)); hint('wipe') },
+    () => { $('online').textContent = 6; scene.setPeers(peersNow(5)) },
+    () => { if (scene.peerBow) { scene.peerBow('p4'); scene.peerBow('p5') } hint('bow') }
   ]
   if (simState < steps.length) steps[simState++]()
 }

@@ -27,7 +27,8 @@ function offerings(nf) {
 const cases = [
   { file: 'autumn-noon-qingshi', season: 'autumn', phase: 'noon', weather: 'clear', style: 'qingshi', flowers: 6, wipe: 0.3 },
   { file: 'spring-dawn-yuanshou', season: 'spring', phase: 'dawn', weather: 'clear', style: 'yuanshou', flowers: 3, wipe: 1 },
-  { file: 'summer-night-peers', season: 'summer', phase: 'night', weather: 'clear', style: 'qingshi', flowers: 2, wipe: 1, peers: 3 },
+  { file: 'summer-night-peers', season: 'summer', phase: 'night', weather: 'clear', style: 'qingshi', flowers: 2, wipe: 1, peers: 9, bowPeer: true },
+  { file: 'autumn-noon-walk', season: 'autumn', phase: 'noon', weather: 'clear', style: 'qingshi', flowers: 4, wipe: 1, peers: 4, walk: [1.4, 6.2] },
   { file: 'winter-night-wubei', season: 'winter', phase: 'night', weather: 'clear', style: 'wubei', flowers: 4, wipe: 1 },
   { file: 'summer-noon-rain', season: 'summer', phase: 'noon', weather: 'rain', style: 'qingshi', flowers: 3, wipe: 1 },
   { file: 'autumn-dusk-bow', season: 'autumn', phase: 'dusk', weather: 'clear', style: 'qingshi', flowers: 9, wipe: 1, bow: true, yaw: 0.4 }
@@ -53,13 +54,15 @@ const cases = [
       s.setEnv({ season: c.season, phase: c.phase, weather: c.weather, quality: 'standard' })
       s.setOfferings(offs)
       s.setWipeLevel(c.wipe)
-      if (c.peers) { s.setPeers(Array.from({ length: c.peers }, (_, i) => ({ key: 'p' + i }))); s.peerBow('p0') }
+      if (c.peers) s.setPeers(Array.from({ length: c.peers }, (_, i) => ({ key: 'p' + i })))
       if (c.yaw) { s.yawGoal = c.yaw; s.yaw = c.yaw }
       let t = Date.now()
-      for (let i = 0; i < 40; i++) { t += 50; s.render(t) }
-      if (c.bow) { s.startBow(3); s.bow.at = t - 1300; s.render(t) }
+      for (let i = 0; i < 160; i++) { t += 50; s.render(t) }
+      if (c.bowPeer) { s.peerBow('p0'); s.peerBow('p3'); for (let i = 0; i < 26; i++) { t += 50; s.render(t) } }
+      if (c.walk) { s.walkTo(c.walk[0], c.walk[1]); for (let i = 0; i < 14; i++) { t += 50; s.render(t) } }
+      if (c.bow) { s.startBow(3); for (let i = 0; i < 26; i++) { t += 50; s.render(t) } }
       const info = s.renderer.info.render
-      return { calls: info.calls, tris: info.triangles, dust: s.dustAmount() }
+      return { calls: info.calls, tris: info.triangles, dust: s.dustAmount(), me: [s.me.x.toFixed(2), s.me.z.toFixed(2)], peersArrived: s.peers.filter((p) => !p.target).length + '/' + s.peers.length }
     }, { c, offs: offerings(c.flowers) })
     await page.locator('#c').screenshot({ path: path.join(out, c.file + '.png') })
     results.push({ case: c.file, ...r })
@@ -82,6 +85,20 @@ const cases = [
     for (let dy = -60; dy <= 60; dy += 6) for (let dx = -20; dx <= 20; dx += 10) s.wipeAt(cx + dx, cy + dy)
     return { cx: Math.round(cx), cy: Math.round(cy), on, off, before, after: s.dustAmount() }
   })
-  console.log(JSON.stringify({ results, wipe, errors: errors.slice(0, 8) }, null, 1))
+  const walk = await page.evaluate(() => {
+    const s = window.__s
+    const v = new THREE.Vector3(1.2, 0.08, 5.0).project(s.camera)
+    const tapped = s.tap((v.x + 1) / 2 * 390, (1 - v.y) / 2 * 844)
+    let t = Date.now()
+    for (let i = 0; i < 120; i++) { t += 50; s.render(t) }
+    const arrived = [s.me.x.toFixed(2), s.me.z.toFixed(2)]
+    const facing = (s.me.ry % (Math.PI * 2)).toFixed(2)
+    let ended = false
+    s.o.onBowEnd = () => { ended = true }
+    s.startBow(3)
+    for (let i = 0; i < 220; i++) { t += 50; s.render(t) }
+    return { tapped, arrived, facing, bowEnded: ended, bowing: s.isBowing() }
+  })
+  console.log(JSON.stringify({ results, wipe, walk, errors: errors.filter((e) => !/GPU stall|willReadFrequently/.test(e)).slice(0, 8) }, null, 1))
   await browser.close()
 })()

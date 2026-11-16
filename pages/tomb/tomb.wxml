@@ -35,7 +35,7 @@
   </view>
 
   <!-- 操作提示（进入后约 6 秒） -->
-  <view class="gesture-tip {{gestureTip ? 'show' : ''}}" wx:if="{{status === 'ready'}}">{{mode === '3d' ? '拖动环视 · 双指缩放 · 在碑面上滑动擦拭' : '在碑面上来回滑动，可以擦拭墓碑'}}</view>
+  <view class="gesture-tip {{gestureTip ? 'show' : ''}}" wx:if="{{status === 'ready'}}">{{mode === '3d' ? '轻点地面走过去 · 拖动环视 · 在碑面上滑动擦拭' : '在碑面上来回滑动，可以擦拭墓碑'}}</view>
 
   <!-- 擦碑进度 -->
   <view class="wipe-panel {{wipeShow ? 'show' : ''}}" wx:if="{{status === 'ready'}}">

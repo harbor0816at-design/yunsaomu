@@ -17,6 +17,10 @@ const SEASONS = {
   autumn: { ground: ['#6f6436', '#7c6c3a', '#655a31'], leaf: ['#d0832f', '#b5561f', '#e3a542', '#9c3b1c'], pine: '#3c5a3e', particle: '#d9822f', bare: false },
   winter: { ground: ['#cfd7dc', '#dfe5e9', '#c3ccd2'], leaf: ['#e9eef1'], pine: '#3a5546', particle: '#ffffff', bare: true }
 }
+// 甬道（墓前铺石前庭）与可行走范围
+const COURT = { x0: -2.35, x1: 2.35, z0: 2.75, z1: 11.2 }
+const STELE_Z = -0.75
+const WALK_SPEED = 1.5
 const STONE = '#8c887a'
 const STONE_DARK = '#6f6b5f'
 const STONE_LIGHT = '#a9a596'
@@ -30,6 +34,7 @@ const FLOWER = {
 }
 
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }
+function angleDiff(a, b) { let d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d }
 function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2 }
 
 class Memorial3D {
@@ -60,13 +65,15 @@ class Memorial3D {
     this.slowSince = 0
     this.lastT = 0
     this.yaw = 0
-    this.pitch = 0.24
-    this.radius = 13.4
+    this.pitch = 0.3
+    this.radius = 9.5
     this.yawGoal = 0
-    this.pitchGoal = 0.24
-    this.radiusGoal = 13.4
+    this.pitchGoal = 0.3
+    this.radiusGoal = 9.5
+    this.focus = null
     this.texDirty = true
     this.texAt = 0
+    this.clock = 0
 
     const T = THREE
     this.G = (name, ...a) => new (T[name + 'BufferGeometry'] || T[name + 'Geometry'])(...a)
@@ -223,7 +230,8 @@ class Memorial3D {
       const x = pos.getX(i)
       const z = pos.getZ(i)
       const d = Math.sqrt(x * x + z * z)
-      const bump = d < 7 ? 0 : (Math.sin(x * 0.35) + Math.cos(z * 0.3)) * 0.35 * clamp((d - 7) / 10, 0, 1) + R() * 0.12 * clamp((d - 5) / 5, 0, 1)
+      const flat = Math.abs(x) < 4.2 && z < 14.5 && z > -6
+      const bump = (d < 7 || flat) ? 0 : (Math.sin(x * 0.35) + Math.cos(z * 0.3)) * 0.35 * clamp((d - 7) / 10, 0, 1) + R() * 0.12 * clamp((d - 5) / 5, 0, 1)
       pos.setY(i, bump)
     }
     geo.computeVertexNormals()
@@ -247,19 +255,53 @@ class Memorial3D {
     col.needsUpdate = true
   }
 
+  // 墓前甬道：方砖铺地、两侧路沿、入口望柱，外接一段石板小路
   buildPath() {
+    const T = this.T
     const R = rng(this.seed ^ 0x51)
-    this.pathGroup = this.add(new this.T.Group())
-    for (let z = 2.6; z < 11.5; z += 0.62) {
-      for (let k = 0; k < 2; k++) {
-        const w = 0.55 + R() * 0.2
-        const m = this.mesh(this.G('Cylinder', w, w * 1.05, 0.08, 6), this.jitter(STONE, 0.1))
-        m.position.set((k ? 0.36 : -0.36) + (R() - 0.5) * 0.12, 0.04, z + (R() - 0.5) * 0.12)
-        m.rotation.y = R() * Math.PI
-        m.scale.set(1, 1, 0.7)
-        this.pathGroup.add(m)
+    const g = this.pathGroup = this.add(new T.Group())
+    const w = COURT.x1 - COURT.x0
+    const len = COURT.z1 - COURT.z0 + 0.4
+    const base = this.mesh(this.G('Box', w + 0.5, 0.06, len), STONE_DARK)
+    base.position.set(0, 0.03, (COURT.z0 + COURT.z1) / 2)
+    g.add(base)
+    const cols = 4
+    const tw = w / cols
+    for (let z = COURT.z0 - 0.1; z < COURT.z1 + 0.1; z += 0.84) {
+      for (let i = 0; i < cols; i++) {
+        const t = this.mesh(this.G('Box', tw - 0.06, 0.05, 0.78), this.jitter(STONE, 0.1))
+        t.position.set(COURT.x0 + tw * (i + 0.5), 0.07, z + 0.4)
+        g.add(t)
       }
     }
+    ;[COURT.x0 - 0.3, COURT.x1 + 0.3].forEach((x) => {
+      const curb = this.mesh(this.G('Box', 0.22, 0.16, len), STONE_LIGHT)
+      curb.position.set(x, 0.08, (COURT.z0 + COURT.z1) / 2)
+      g.add(curb)
+    })
+    // 入口望柱
+    ;[COURT.x0 - 0.3, COURT.x1 + 0.3].forEach((x) => {
+      const post = this.mesh(this.G('Box', 0.3, 1.1, 0.3), STONE_LIGHT)
+      post.position.set(x, 0.55, COURT.z1 + 0.25)
+      const cap = this.mesh(this.G('Sphere', 0.17, 8, 6), STONE)
+      cap.position.set(x, 1.2, COURT.z1 + 0.25)
+      g.add(post, cap)
+    })
+    // 外面一段石板小路
+    for (let z = COURT.z1 + 0.9; z < 16; z += 0.66) {
+      for (let k = 0; k < 2; k++) {
+        const r = 0.5 + R() * 0.18
+        const m = this.mesh(this.G('Cylinder', r, r * 1.05, 0.07, 6), this.jitter(STONE, 0.1))
+        m.position.set((k ? 0.34 : -0.34) + (R() - 0.5) * 0.14, 0.035, z + (R() - 0.5) * 0.1)
+        m.rotation.y = R() * Math.PI
+        m.scale.set(1, 1, 0.7)
+        g.add(m)
+      }
+    }
+    // 落脚标记（点地面时出现的光圈）
+    this.marker = this.add(new T.Mesh(this.G('Ring', 0.16, 0.24, 24), new T.MeshBasicMaterial({ color: 0xe6d5ad, transparent: true, opacity: 0, depthWrite: false })))
+    this.marker.rotation.x = -Math.PI / 2
+    this.marker.position.y = 0.11
   }
 
   buildCourtyard() {
@@ -467,7 +509,7 @@ class Memorial3D {
   buildLanterns() {
     const T = this.T
     this.lanterns = []
-    ;[[-1.95, 2.7], [1.95, 2.7]].forEach(([x, z], i) => {
+    ;[[COURT.x0 - 0.62, 3.6], [COURT.x1 + 0.62, 3.6], [COURT.x0 - 0.62, 7.6], [COURT.x1 + 0.62, 7.6]].forEach(([x, z], i) => {
       const g = new T.Group()
       const base = this.mesh(this.G('Cylinder', 0.26, 0.32, 0.18, 6), STONE)
       base.position.y = 0.09
@@ -483,10 +525,12 @@ class Memorial3D {
       tip.position.y = 1.56
       g.add(base, post, tray, box, roof, tip)
       g.position.set(x, 0, z)
-      const light = new T.PointLight(0xffc477, 0, 5, 2)
-      light.position.set(x, 1.15, z)
-      this.add(light)
-      this.lampLights.push(light)
+      if (i < 2) {
+        const light = new T.PointLight(0xffc477, 0, 5.5, 2)
+        light.position.set(x, 1.15, z)
+        this.add(light)
+        this.lampLights.push(light)
+      }
       this.add(g)
       this.lanterns.push(box)
     })
@@ -520,31 +564,83 @@ class Memorial3D {
   }
 
   // 小人（自己/他人）：圆柱身 + 球头，可鞠躬
-  makeFigure(color, scale) {
+  // 小人：髋部、腰、肩可动，正面朝本地 +z。走路摆腿摆臂，鞠躬先合掌再从腰部弯下。
+  makeFigure(color, scale, hairColor) {
     const T = this.T
     const s = scale || 1
     const g = new T.Group()
-    const legs = this.mesh(this.G('Cylinder', 0.16 * s, 0.2 * s, 0.42 * s, 8), '#2f2b26')
-    legs.position.y = 0.21 * s
-    const upper = new T.Group()
-    upper.position.y = 0.42 * s
-    const body = this.mesh(this.G('Cylinder', 0.15 * s, 0.2 * s, 0.5 * s, 8), color)
-    body.position.y = 0.25 * s
-    const head = this.mesh(this.G('Sphere', 0.17 * s, 10, 8), '#e8cfb2')
-    head.position.y = 0.66 * s
-    const hair = this.mesh(this.G('Sphere', 0.175 * s, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), '#2a2420')
-    hair.position.y = 0.67 * s
-    hair.rotation.x = -0.3
-    upper.add(body, head, hair)
-    g.add(legs, upper)
-    g.userData.upper = upper
-    return g
+    const hipY = 0.5 * s
+    const mkLeg = (x) => {
+      const leg = new T.Group()
+      leg.position.set(x * s, hipY, 0)
+      const m = this.mesh(this.G('Cylinder', 0.065 * s, 0.06 * s, 0.46 * s, 6), '#2b2824')
+      m.position.y = -0.23 * s
+      const foot = this.mesh(this.G('Box', 0.11 * s, 0.06 * s, 0.17 * s), '#1f1c19')
+      foot.position.set(0, -0.47 * s, 0.035 * s)
+      leg.add(m, foot)
+      return leg
+    }
+    const legL = mkLeg(-0.085)
+    const legR = mkLeg(0.085)
+    const spine = new T.Group()
+    spine.position.y = hipY
+    // 下摆挂在髋部，不随上身弯折
+    const skirt = this.mesh(this.G('Cylinder', 0.17 * s, 0.25 * s, 0.34 * s, 10), color)
+    skirt.position.y = hipY - 0.1 * s
+    const torso = this.mesh(this.G('Cylinder', 0.15 * s, 0.18 * s, 0.42 * s, 10), color)
+    torso.position.y = 0.2 * s
+    const collar = this.mesh(this.G('Cylinder', 0.07 * s, 0.11 * s, 0.06 * s, 8), mixHex(color, '#ffffff', 0.25))
+    collar.position.y = 0.43 * s
+    const headPivot = new T.Group()
+    headPivot.position.y = 0.46 * s
+    const head = this.mesh(this.G('Sphere', 0.155 * s, 12, 10), '#e7cdb0')
+    head.position.y = 0.15 * s
+    const hair = this.mesh(this.G('Sphere', 0.162 * s, 12, 10, 0, Math.PI * 2, 0, Math.PI * 0.52), hairColor || '#2a2420')
+    hair.position.set(0, 0.165 * s, -0.012 * s)
+    hair.rotation.x = -0.32
+    headPivot.add(head, hair)
+    // 两节手臂（肩、肘），才能自然合掌
+    const mkArm = (x) => {
+      const arm = new T.Group()
+      arm.position.set(x * s, 0.38 * s, 0)
+      const upper = this.mesh(this.G('Cylinder', 0.058 * s, 0.066 * s, 0.22 * s, 6), color)
+      upper.position.y = -0.105 * s
+      const elbow = new T.Group()
+      elbow.position.y = -0.21 * s
+      const fore = this.mesh(this.G('Cylinder', 0.05 * s, 0.062 * s, 0.2 * s, 6), color)
+      fore.position.y = -0.095 * s
+      const hand = this.mesh(this.G('Sphere', 0.042 * s, 6, 5), '#e7cdb0')
+      hand.position.y = -0.2 * s
+      elbow.add(fore, hand)
+      arm.add(upper, elbow)
+      arm.userData.elbow = elbow
+      return arm
+    }
+    const armL = mkArm(-0.2)
+    const armR = mkArm(0.2)
+    spine.add(torso, collar, headPivot, armL, armR)
+    g.add(legL, legR, skirt, spine)
+    // 地面软阴影
+    const sh = new T.Mesh(this.G('Circle', 0.3 * s, 16), new T.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false }))
+    sh.rotation.x = -Math.PI / 2
+    sh.position.y = 0.012
+    g.add(sh)
+    g.userData = { spine, headPivot, armL, armR, legL, legR }
+    const st = {
+      g, x: 0, z: 0, ry: Math.PI, ryGoal: Math.PI, speed: 0, target: null, phase: Math.random() * 6,
+      bow: null, palms: 0, faceStele: true, breath: Math.random() * 6, baseY: 0.1
+    }
+    return st
   }
 
   buildAvatar() {
-    this.avatar = this.add(this.makeFigure('#5d6b52', 1))
-    this.avatar.position.set(0, 0.08, 3.9)
-    this.avatar.rotation.y = Math.PI
+    this.me = this.makeFigure('#5d6b52', 1, '#2a2420')
+    this.me.x = 0
+    this.me.z = 9.2
+    this.me.ry = this.me.ryGoal = Math.PI
+    this.add(this.me.g)
+    this.avatar = this.me.g
+    this.focus = { x: 0, y: 1.3, z: 6.8 }
   }
 
   buildParticles() {
@@ -780,25 +876,59 @@ class Memorial3D {
     })
   }
 
+  // 亲友：按在场列表增删；新来的从入口走进来，站到空位或对方广播的位置
+  peerSlots() {
+    const slots = []
+    ;[3.3, 4.3, 5.3, 6.3].forEach((z) => [-1.75, -0.85, 0.85, 1.75].forEach((x) => slots.push([x, z])))
+    return slots
+  }
+
   setPeers(peers) {
-    const T = this.T
-    const prev = {}
-    this.peers.forEach((p) => { prev[p.key] = p })
-    while (this.peerGroup.children.length) this.peerGroup.remove(this.peerGroup.children[0])
-    const slots = [[-1.15, 3.9], [1.2, 4.0], [-1.75, 4.7], [1.8, 4.8], [-0.75, 5.3], [0.8, 5.4]]
-    const colors = ['#6b4f3a', '#4a5e7a', '#7a4e4e', '#4f5d3a', '#5a4a68', '#3f5a5a']
-    this.peers = (peers || []).slice(0, 6).map((p, i) => {
-      const f = this.makeFigure(colors[i % colors.length], 0.95)
-      f.position.set(slots[i][0], 0.06, slots[i][1])
-      f.rotation.y = Math.atan2(-slots[i][0], -(slots[i][1] + 0.75))
-      this.peerGroup.add(f)
-      return { key: p.key, fig: f, bowAt: prev[p.key] ? prev[p.key].bowAt : 0 }
+    const colors = ['#6b4f3a', '#4a5e7a', '#7a4e4e', '#4f5d3a', '#5a4a68', '#3f5a5a', '#6a5a3a', '#3d4f40']
+    const hairs = ['#2a2420', '#3a2c22', '#1d1b19', '#5b4a3c']
+    const keep = {}
+    ;(peers || []).slice(0, 15).forEach((p) => { keep[p.key] = p })
+    this.peers = this.peers.filter((st) => {
+      if (keep[st.key]) return true
+      this.peerGroup.remove(st.g)
+      return false
+    })
+    const used = this.peers.map((p) => p.slotIdx)
+    const slots = this.peerSlots()
+    Object.keys(keep).forEach((key) => {
+      if (this.peers.find((p) => p.key === key)) return
+      const h = hashStr(key)
+      const st = this.makeFigure(colors[h % colors.length], 0.96, hairs[(h >> 3) % hairs.length])
+      st.key = key
+      let idx = slots.findIndex((_, i) => used.indexOf(i) < 0)
+      if (idx < 0) idx = h % slots.length
+      used.push(idx)
+      st.slotIdx = idx
+      st.x = (h % 2 ? 0.5 : -0.5)
+      st.z = COURT.z1 + 1.6
+      st.ry = st.ryGoal = Math.PI
+      const p = keep[key]
+      const tx = p.x !== undefined ? p.x : slots[idx][0]
+      const tz = p.z !== undefined ? p.z : slots[idx][1]
+      st.target = this.clampWalk(tx, tz)
+      this.peerGroup.add(st.g)
+      this.peers.push(st)
     })
   }
 
+  peerMove(key, x, z) {
+    const p = this.peers.find((st) => st.key === key)
+    if (!p || p.bow) return
+    p.target = this.clampWalk(x, z)
+  }
+
   peerBow(key) {
-    const p = this.peers.find((x) => x.key === key)
-    if (p) p.bowAt = Date.now()
+    const p = this.peers.find((st) => st.key === key)
+    if (p) this.beginBow(p, 3)
+  }
+
+  clampWalk(x, z) {
+    return { x: clamp(x, COURT.x0 + 0.2, COURT.x1 - 0.2), z: clamp(z, COURT.z0, COURT.z1 + 1.8) }
   }
 
   // ---------- 擦碑 ----------
@@ -835,7 +965,7 @@ class Memorial3D {
   isOnStele(x, y) { return !!this.hitFace(x, y) }
 
   wipeAt(x, y) {
-    if (this.bow || !this.cells) return 0
+    if (this.me.bow || !this.cells) return 0
     const uv = this.hitFace(x, y)
     if (!uv) return 0
     const u = uv.x
@@ -870,17 +1000,45 @@ class Memorial3D {
   }
   sweep() { this.sweepAt = Date.now(); this.texDirty = true }
 
-  startBow(cycles) { this.bow = { at: Date.now(), cycles: cycles || 3 } }
-  stopBow() { this.bow = null }
-  isBowing() { return !!this.bow }
-
-  // ---------- 视角 ----------
-  dragBy(dx, dy) {
-    this.yawGoal = clamp(this.yawGoal - dx * 0.006, -0.55, 0.55)
-    this.pitchGoal = clamp(this.pitchGoal + dy * 0.004, 0.12, 0.62)
+  // 鞠躬：停步 → 转向墓碑 → 合掌 → 弯腰 → 停留 → 起身（cycles 次）→ 放下手
+  beginBow(st, cycles) {
+    st.target = null
+    st.ryGoal = Math.atan2(0 - st.x, STELE_Z - st.z)
+    st.bow = { at: this.clock + 0.35, cycles: cycles || 3, end: 0 }
   }
-  zoomBy(f) { this.radiusGoal = clamp(this.radiusGoal * f, 8.5, 16) }
-  resetView() { this.yawGoal = 0; this.pitchGoal = 0.24; this.radiusGoal = 13.4 }
+  startBow(cycles) { this.beginBow(this.me, cycles) }
+  stopBow() { if (this.me.bow) this.me.bow.end = this.me.bow.end || this.clock }
+  isBowing() { return !!this.me.bow }
+
+  // 点地面走过去；点在碑面上不处理（碑面用滑动擦拭）
+  tap(x, y) {
+    if (this.hitFace(x, y)) return false
+    const T = this.T
+    const ndc = new T.Vector2((x / this.w) * 2 - 1, -(y / this.h) * 2 + 1)
+    this.raycaster.setFromCamera(ndc, this.camera)
+    const hit = new T.Vector3()
+    if (!this.raycaster.ray.intersectPlane(new T.Plane(new T.Vector3(0, 1, 0), -0.08), hit)) return false
+    if (this.me.bow) this.stopBow()
+    const t = this.clampWalk(hit.x, hit.z)
+    this.walkTo(t.x, t.z)
+    return true
+  }
+
+  walkTo(x, z) {
+    const t = this.clampWalk(x, z)
+    this.me.target = t
+    this.marker.position.x = t.x
+    this.marker.position.z = t.z
+    this.markerAt = this.clock
+  }
+
+  // ---------- 视角（围着自己转） ----------
+  dragBy(dx, dy) {
+    this.yawGoal = clamp(this.yawGoal - dx * 0.006, -1.2, 1.2)
+    this.pitchGoal = clamp(this.pitchGoal + dy * 0.004, 0.1, 0.7)
+  }
+  zoomBy(f) { this.radiusGoal = clamp(this.radiusGoal * f, 5.5, 15) }
+  resetView() { this.yawGoal = 0; this.pitchGoal = 0.3; this.radiusGoal = 9.5 }
 
   // ---------- 碑面贴图 ----------
   drawTexture(now) {
@@ -997,39 +1155,117 @@ class Memorial3D {
     } else this.slowSince = 0
   }
 
-  bowAmount(at, now, cycles) {
-    const period = 2800
-    const el = now - at
-    if (el >= period * cycles) return -1
-    const p = (el % period) / period
-    if (p < 0.35) return ease(p / 0.35)
-    if (p < 0.6) return 1
-    return 1 - ease((p - 0.6) / 0.4)
+  // 返回 { bend 0..1, palms 0..1, done }
+  bowPose(st) {
+    const b = st.bow
+    const P = 3.0
+    const t = this.clock - b.at
+    const total = P * b.cycles
+    const endAt = b.end ? Math.min(b.end, b.at + total) : b.at + total
+    if (t < 0) return { bend: 0, palms: clamp(1 + t / 0.35, 0, 1) * 0.6, done: false }
+    const sinceEnd = this.clock - endAt
+    if (sinceEnd > 0) {
+      // 收势：起身、放手
+      const bendLeft = st.lastBend ? Math.max(0, st.lastBend - sinceEnd * 2.2) : 0
+      const palms = clamp(1 - (sinceEnd - 0.2) / 0.5, 0, 1)
+      return { bend: bendLeft, palms, done: palms <= 0 && bendLeft <= 0 }
+    }
+    const palms = clamp(0.6 + t / 0.3, 0, 1)
+    const c = (t % P) / P
+    let bend
+    if (c < 0.12) bend = 0
+    else if (c < 0.42) bend = ease((c - 0.12) / 0.3)
+    else if (c < 0.6) bend = 1
+    else if (c < 0.92) bend = 1 - ease((c - 0.6) / 0.32)
+    else bend = 0
+    return { bend, palms, done: false }
+  }
+
+  updateFigure(st, dt) {
+    const sec = dt / 1000
+    const u = st.g.userData
+    // 行走
+    let moving = false
+    if (st.target && !st.bow) {
+      const dx = st.target.x - st.x
+      const dz = st.target.z - st.z
+      const d = Math.sqrt(dx * dx + dz * dz)
+      if (d > 0.04) {
+        moving = true
+        st.ryGoal = Math.atan2(dx, dz)
+        const want = Math.min(WALK_SPEED, d * 2.2 + 0.25)
+        st.speed += (want - st.speed) * Math.min(1, sec * 5)
+        const facing = Math.cos(angleDiff(st.ry, st.ryGoal))
+        const step = Math.min(d, st.speed * sec * Math.max(0.15, facing))
+        st.x += (dx / d) * step
+        st.z += (dz / d) * step
+      } else {
+        st.target = null
+        if (st.faceStele) st.ryGoal = Math.atan2(0 - st.x, STELE_Z - st.z)
+      }
+    }
+    if (!moving) st.speed += (0 - st.speed) * Math.min(1, sec * 6)
+    // 平滑转身
+    st.ry += angleDiff(st.ry, st.ryGoal) * Math.min(1, sec * 7)
+    // 步态
+    const k = clamp(st.speed / WALK_SPEED, 0, 1)
+    st.phase += sec * (4 + 5.5 * k) * (k > 0.02 ? 1 : 0)
+    const swing = Math.sin(st.phase) * 0.6 * k
+    st.breath += sec
+    // 鞠躬
+    let bend = 0
+    let palms = 0
+    if (st.bow) {
+      const pose = this.bowPose(st)
+      bend = pose.bend
+      palms = pose.palms
+      st.lastBend = bend
+      if (pose.done) {
+        st.bow = null
+        st.lastBend = 0
+        if (st === this.me && this.o.onBowEnd) this.o.onBowEnd()
+      }
+    }
+    st.palms += (palms - st.palms) * Math.min(1, sec * 10)
+    const pm = st.palms
+    u.legL.rotation.x = swing
+    u.legR.rotation.x = -swing
+    // 鞠躬约 45°，头随之微低；合掌：大臂下垂略前，小臂内折，双手在胸前相合
+    u.spine.rotation.x = bend * 0.78 + Math.sin(st.breath * 1.6) * 0.012 + k * 0.06
+    u.spine.rotation.z = Math.sin(st.phase) * 0.03 * k
+    u.headPivot.rotation.x = bend * 0.22 - k * 0.04
+    const q = 1 - pm
+    const eL = u.armL.userData.elbow
+    const eR = u.armR.userData.elbow
+    u.armL.rotation.set(-swing * 0.75 * q - 0.35 * pm, 0, 0.07 * q + 0.15 * pm)
+    u.armR.rotation.set(swing * 0.75 * q - 0.35 * pm, 0, -0.07 * q - 0.15 * pm)
+    eL.rotation.set(-(0.18 + 0.12 * k) * q - 2.4 * pm, 0.6 * pm, 1.1 * pm)
+    eR.rotation.set(-(0.18 + 0.12 * k) * q - 2.4 * pm, -0.6 * pm, -1.1 * pm)
+    // 弯腰时臀部略后移、整体略降，避免像折断
+    const bob = Math.abs(Math.sin(st.phase)) * 0.035 * k
+    st.g.position.set(st.x - Math.sin(st.ry) * bend * 0.04, st.baseY + bob - bend * 0.015, st.z - Math.cos(st.ry) * bend * 0.04)
+    st.g.rotation.y = st.ry
+    return moving
   }
 
   updateCamera(now, dt) {
-    const k = 1 - Math.pow(0.001, dt / 1000)
+    const sec = dt / 1000
+    const k = 1 - Math.pow(0.002, sec)
     this.yaw += (this.yawGoal - this.yaw) * k
     this.pitch += (this.pitchGoal - this.pitch) * k
     this.radius += (this.radiusGoal - this.radius) * k
-    let dip = 0
-    if (this.bow) {
-      const b = this.bowAmount(this.bow.at, now, this.bow.cycles)
-      if (b < 0) {
-        this.bow = null
-        if (this.o.onBowEnd) this.o.onBowEnd()
-      } else dip = b
-    }
-    this.avatar.userData.upper.rotation.x = -dip * 0.8
-    const target = { x: 0, y: 1.6 - dip * 0.25, z: -0.6 }
-    const r = this.radius - dip * 0.9
-    const pitch = this.pitch - dip * 0.06
-    this.camera.position.set(target.x + Math.sin(this.yaw) * Math.cos(pitch) * r, target.y + Math.sin(pitch) * r + 0.4, target.z + Math.cos(this.yaw) * Math.cos(pitch) * r)
-    this.camera.lookAt(target.x, target.y, target.z)
-    // 自己的小人随视角站在镜头前方的石板路上（第三人称，从背后看）
-    const ad = Math.min(4.2, r * 0.31)
-    this.avatar.position.set(Math.sin(this.yaw) * ad, 0.08, -0.6 + Math.cos(this.yaw) * ad)
-    this.avatar.rotation.y = Math.PI + this.yaw
+    const m = this.me
+    // 视线焦点在自己和墓碑之间，墓碑始终在画面里
+    const fx = m.x * 0.7
+    const fz = m.z + (STELE_Z - m.z) * 0.32
+    const fk = 1 - Math.pow(0.02, sec)
+    this.focus.x += (fx - this.focus.x) * fk
+    this.focus.z += (fz - this.focus.z) * fk
+    this.focus.y += (1.3 - this.focus.y) * fk
+    const c = Math.cos(this.pitch)
+    const camY = Math.max(0.9, this.focus.y + Math.sin(this.pitch) * this.radius)
+    this.camera.position.set(this.focus.x + Math.sin(this.yaw) * c * this.radius, camY, this.focus.z + Math.cos(this.yaw) * c * this.radius)
+    this.camera.lookAt(this.focus.x, this.focus.y, this.focus.z)
   }
 
   animate(now, dt) {
@@ -1041,15 +1277,17 @@ class Memorial3D {
       c.position.x = Math.cos(c.userData.angle) * 55
       c.position.z = Math.sin(c.userData.angle) * 55 - 10
     })
-    // 他人鞠躬
-    this.peers.forEach((p) => {
-      let b = 0
-      if (p.bowAt) {
-        b = this.bowAmount(p.bowAt, now, 3)
-        if (b < 0) { p.bowAt = 0; b = 0 }
-      }
-      p.fig.userData.upper.rotation.x = -b * 0.8
-    })
+    // 自己与亲友
+    this.clock = (this.clock || 0) + dt / 1000
+    const moving = this.updateFigure(this.me, dt)
+    if (moving && this.o.onMove && now - (this.moveSent || 0) > 250) {
+      this.moveSent = now
+      this.o.onMove({ x: +this.me.x.toFixed(2), z: +this.me.z.toFixed(2) })
+    }
+    this.peers.forEach((p) => this.updateFigure(p, dt))
+    const mk = this.markerAt ? this.clock - this.markerAt : 9
+    this.marker.material.opacity = mk < 1.2 ? 0.7 * (1 - mk / 1.2) : 0
+    this.marker.scale.setScalar(1 + mk * 0.4)
     // 香
     const nowS = this.now()
     let emitters = []
